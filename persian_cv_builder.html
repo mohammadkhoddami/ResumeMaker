@@ -39,11 +39,35 @@ html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-s
 </head>
 <body>
 <div id="root"></div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // Bind to window to access inside Babel script safely
+  window.fbInit = {
+     initializeApp, getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged,
+     getFirestore, doc, setDoc, onSnapshot
+  };
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script type="text/babel" data-presets="react">
 const {useState,useRef,useCallback,useEffect}=React;
+
+// Firebase initialization
+let app, auth, db, appId = 'default-app-id';
+try {
+  const { initializeApp, getAuth, getFirestore } = window.fbInit || {};
+  if (initializeApp && typeof __firebase_config !== 'undefined') {
+    const firebaseConfig = JSON.parse(__firebase_config);
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  }
+} catch(e) { console.warn("Firebase config error:", e); }
 
 let idC=100;const uid=()=>`s${++idC}`;
 
@@ -319,6 +343,109 @@ function App(){
   const cvRef=useRef(null);
   const dragIdx=useRef(null);
   const dragOIdx=useRef(null);
+  const fileInputRef=useRef(null);
+
+  // Cloud Storage States
+  const [user, setUser] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+
+  // Auth Effect
+  useEffect(() => {
+    if (!auth) return;
+    const initAuth = async () => {
+      const { signInWithCustomToken, signInAnonymously } = window.fbInit;
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+      }
+    };
+    initAuth();
+    const { onAuthStateChanged } = window.fbInit;
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  // Load Data Effect
+  useEffect(() => {
+    if (!user || !db) return;
+    let isInitial = true; // Use flag to prevent overwriting during user typing
+    const { doc, onSnapshot } = window.fbInit;
+    const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cv_data', 'main');
+    
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists() && isInitial) {
+        const data = docSnap.data();
+        if (data.sections) setSections(data.sections);
+        if (data.theme) setTheme(data.theme);
+        if (data.ac) setAc(data.ac);
+        if (data.fs) setFs(data.fs);
+        if (data.updatedAt) setLastSaved(new Date(data.updatedAt));
+        isInitial = false;
+      }
+    }, (err) => {
+      console.error("Read error:", err);
+    });
+    
+    return () => unsubscribe();
+  }, [user]);
+
+  // Save to Cloud Function
+  const saveToCloud = async () => {
+    if (!user || !db) return;
+    const { doc, setDoc } = window.fbInit;
+    setSaving(true);
+    try {
+      const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cv_data', 'main');
+      await setDoc(docRef, {
+        sections, theme, ac, fs,
+        updatedAt: new Date().toISOString()
+      });
+      setLastSaved(new Date());
+    } catch(err) {
+      console.error("Save error:", err);
+    }
+    setSaving(false);
+  };
+
+  // Export Data to JSON backup file
+  const exportJSON = () => {
+    const data = { sections, theme, ac, fs };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cv-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Import Data from JSON backup file
+  const importJSON = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.sections) setSections(data.sections);
+        if (data.theme) setTheme(data.theme);
+        if (data.ac) setAc(data.ac);
+        if (data.fs) setFs(data.fs);
+      } catch (err) {
+        console.error("Failed to parse JSON backup file", err);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null; // Reset input so same file can be selected again
+  };
 
   useEffect(()=>{
     if(!cvRef.current)return;
@@ -539,8 +666,26 @@ function App(){
 
           <div style={{flex:1}}/>
 
-          {/* Export */}
+          {/* Export & Save */}
           <div style={{padding:12,display:"flex",flexDirection:"column",gap:6}}>
+            {user && (
+              <button onClick={saveToCloud} disabled={saving} style={{width:"100%",background:"#0f172a",color:"#fff",border:"none",borderRadius:8,padding:"10px 0",fontSize:13,fontWeight:600,cursor:saving?"not-allowed":"pointer",opacity:saving?.6:1,fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+                {saving ? "در حال ذخیره..." : "☁ ذخیره در ابری"}
+              </button>
+            )}
+            {lastSaved && <div style={{fontSize:10,color:"#64748b",textAlign:"center",marginBottom:4}}>آخرین ذخیره: {lastSaved.toLocaleTimeString('fa-IR')}</div>}
+
+            {/* Local JSON Backup / Restore */}
+            <div style={{display:"flex", gap:6}}>
+              <button onClick={exportJSON} style={{flex:1, background:"transparent", color:ac, border:`1px solid ${ac}`, borderRadius:8, padding:"8px 0", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+                ⬇ فایل پشتیبان
+              </button>
+              <button onClick={()=>fileInputRef.current?.click()} style={{flex:1, background:"transparent", color:ac, border:`1px solid ${ac}`, borderRadius:8, padding:"8px 0", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+                ⬆ بازیابی اطلاعات
+              </button>
+              <input type="file" accept=".json" ref={fileInputRef} onChange={importJSON} style={{display:"none"}} />
+            </div>
+
             <button onClick={exportPDF} disabled={exporting} style={{width:"100%",background:ac,color:"#fff",border:"none",borderRadius:8,padding:"12px 0",fontSize:14,fontWeight:700,cursor:exporting?"not-allowed":"pointer",opacity:exporting?.6:1,fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
               {exporting?"در حال ایجاد PDF…":"⬇  دریافت PDF"}
             </button>
