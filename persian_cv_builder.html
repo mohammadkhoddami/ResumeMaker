@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>سازنده رزومه فارسی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-serif;background:#e2e8f0;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+
+/* Enhanced print styles for native printing */
+@media print{
+  @page{size:A4 portrait;margin:15mm 12mm}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  .app-root{display:block!important;height:auto!important;overflow:visible!important}
+  .no-print,.sidebar,.sidebar-toggle,.preview-help,.page-marker,.sec-ctrl{display:none!important}
+  .preview-area{padding:0!important;overflow:visible!important;background:#fff!important;display:block!important}
+  .preview-wrapper{max-width:none!important;width:100%!important;position:static!important}
+  .cv-paper{box-shadow:none!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important}
+  
+  /* Prevent context breaking natively */
+  .sec-wrap, .cv-item {break-inside:avoid;page-break-inside:avoid}
+  .sec-title {break-after:avoid;page-break-after:avoid}
+  
+  /* Remove placeholders on print */
+  [data-ph]:empty::before {content:none!important}
+}
+
+/* Styles applied during smart PDF export */
+.pdf-export .no-print, .pdf-export .sec-ctrl {display:none!important}
+.pdf-export [data-ph]:empty::before {content:none!important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const {useState,useRef,useCallback,useEffect}=React;
+
+let idC=100;const uid=()=>`s${++idC}`;
+
+// ── Default data ────────────────────────────────────────────────────
+const mkHeader=()=>({id:"s_header",type:"header",data:{
+  name:"نام و نام‌خانوادگی",
+  title:"عنوان شغلی",
+  email:"example@email.com",
+  phone:"۰۹۱۲-۳۴۵-۶۷۸۹",
+  location:"تهران، ایران",
+  linkedin:"linkedin.com/in/username",
+  website:"",
+}});
+
+const mkSummary=()=>({id:"s_sum",type:"summary",title:"درباره من",
+  content:"متخصص با تجربه در حوزه توسعه نرم‌افزار با تمرکز بر ساخت محصولات با کیفیت بالا. علاقه‌مند به یادگیری فناوری‌های جدید و کار تیمی موثر."});
+
+const mkExp=()=>({id:"s_exp",type:"experience",title:"سوابق کاری",items:[{
+  id:uid(),company:"نام شرکت",role:"مهندس ارشد نرم‌افزار",period:"فروردین ۱۴۰۱ – اکنون",location:"تهران",
+  bullets:["رهبری تیم ۶ نفره توسعه‌دهنده در پروژه‌های کلیدی محصول","بهبود ۴۰ درصدی عملکرد سیستم از طریق بهینه‌سازی پایگاه داده","طراحی و پیاده‌سازی معماری میکروسرویس برای سیستم‌های حجیم"],
+}]});
+
+const mkEdu=()=>({id:"s_edu",type:"education",title:"تحصیلات",items:[{
+  id:uid(),institution:"دانشگاه صنعتی شریف",degree:"کارشناسی ارشد مهندسی کامپیوتر",period:"۱۳۹۴ – ۱۳۹۶",gpa:"۱۸.۵ / ۲۰",
+}]});
+
+const mkSkills=()=>({id:"s_ski",type:"skills",title:"مهارت‌ها",groups:[
+  {id:uid(),label:"زبان‌های برنامه‌نویسی",items:"Python, JavaScript, TypeScript, Go"},
+  {id:uid(),label:"فریم‌ورک‌ها",items:"React, Django, FastAPI, Node.js"},
+  {id:uid(),label:"ابزارها و زیرساخت",items:"Docker, Kubernetes, PostgreSQL, Redis, AWS"},
+]});
+
+const mkProj=()=>({id:uid(),type:"projects",title:"پروژه‌ها",items:[{
+  id:uid(),name:"نام پروژه",link:"github.com/username/project",
+  description:"توضیح پروژه و اهداف آن. این پروژه با هدف حل مشکل خاصی طراحی شد.",
+  tech:"React, Node.js, PostgreSQL",
+}]});
+
+const mkCerts=()=>({id:uid(),type:"certifications",title:"گواهینامه‌ها",items:[{
+  id:uid(),name:"AWS Solutions Architect",issuer:"Amazon Web Services",date:"۱۴۰۲",
+}]});
+
+const mkLangs=()=>({id:uid(),type:"languages",title:"زبان‌ها",items:[
+  {id:uid(),name:"فارسی",level:"زبان مادری"},
+  {id:uid(),name:"انگلیسی",level:"پیشرفته (IELTS 7.5)"},
+]});
+
+const mkCustom=()=>({id:uid(),type:"custom",title:"بخش دلخواه",
+  content:"محتوای دلخواه خود را اینجا وارد کنید — جوایز، انتشارات، فعالیت‌های داوطلبانه و غیره."});
+
+const DEFAULTS={header:mkHeader,summary:mkSummary,experience:mkExp,education:mkEdu,skills:mkSkills,projects:mkProj,certifications:mkCerts,languages:mkLangs,custom:mkCustom};
+
+const SECTION_LABELS={
+  summary:"درباره من",experience:"سوابق کاری",education:"تحصیلات",
+  skills:"مهارت‌ها",projects:"پروژه‌ها",certifications:"گواهینامه‌ها",
+  languages:"زبان‌ها",custom:"بخش دلخواه",
+};
+
+// ── Inline editable ───────────────────────────────────────────────────────────
+function Ed({value,onChange,tag="span",ph="ویرایش",multi=false,style={},cls=""}){
+  const ref=useRef(null);
+  const Tag=tag;
+  const onBlur=()=>{if(ref.current)onChange(ref.current.innerText.trim()||value)};
+  const onKD=(e)=>{if(!multi&&e.key==="Enter"){e.preventDefault();ref.current?.blur()}};
+  useEffect(()=>{if(ref.current&&ref.current.innerText!==value)ref.current.innerText=value||"";},[value]);
+  return <Tag ref={ref} contentEditable suppressContentEditableWarning onBlur={onBlur} onKeyDown={onKD} data-ph={ph} className={cls} style={{outline:"none",minWidth:8,direction:"rtl",...style}}/>;
+}
+
+// ── Section renderers ─────────────────────────────────────────────────────────
+function HeaderSec({sec,upd,ac,theme}){
+  const d=sec.data;
+  const set=(k,v)=>upd({...sec,data:{...d,[k]:v}});
+  const darkBg=theme==="modern"||theme==="executive";
+  return(
+    <div className="cv-item first-item" style={{padding:"24px 28px 18px",background:darkBg?ac:"transparent",color:darkBg?"#fff":"#0f172a",borderBottom:!darkBg?`3px solid ${ac}`:"none",direction:"rtl"}}>
+      <Ed value={d.name} onChange={v=>set("name",v)} tag="div" ph="نام و نام‌خانوادگی" style={{fontSize:28,fontWeight:700,lineHeight:1.2,letterSpacing:0}}/>
+      <Ed value={d.title} onChange={v=>set("title",v)} tag="div" ph="عنوان شغلی" style={{fontSize:15,opacity:.82,marginTop:4,fontWeight:400}}/>
+      <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:10,direction:"rtl"}}>
+        {[["email","✉"],["phone","📞"],["location","📍"],["linkedin","🔗"],["website","🌐"]].map(([k,ico])=>
+          d[k]?(
+            <span key={k} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,opacity:.88,direction:"ltr"}}>
+              <span>{ico}</span>
+              <Ed value={d[k]} onChange={v=>set(k,v)} ph={k} style={{direction:"ltr"}}/>
+            </span>
+          ):(
+            <span key={k} className="no-print" onClick={()=>set(k,k==="website"?"yoursite.com":"")} style={{fontSize:10,opacity:.35,cursor:"pointer",border:`1px dashed ${darkBg?"rgba(255,255,255,.4)":"#94a3b8"}`,borderRadius:3,padding:"1px 5px",direction:"rtl"}}>+ {k}</span>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SumSec({sec,upd}){
+  return <div className="cv-item first-item"><Ed value={sec.content} onChange={v=>upd({...sec,content:v})} tag="div" multi ph="درباره خودتان بنویسید..." style={{color:"#334155",lineHeight:1.85,minHeight:36}}/></div>;
+}
+
+function ExpSec({sec,upd}){
+  const add=()=>upd({...sec,items:[...sec.items,{id:uid(),company:"نام شرکت",role:"عنوان شغلی",period:"۱۴۰۲ – اکنون",location:"",bullets:[""]}]});
+  const rem=(id)=>upd({...sec,items:sec.items.filter(i=>i.id!==id)});
+  const patch=(id,p)=>upd({...sec,items:sec.items.map(i=>i.id===id?{...i,...p}:i)});
+  const addB=(id)=>{const it=sec.items.find(i=>i.id===id);patch(id,{bullets:[...it.bullets,""]})};
+  const editB=(id,idx,v)=>{const it=sec.items.find(i=>i.id===id);const b=[...it.bullets];b[idx]=v;patch(id,{bullets:b})};
+  const remB=(id,idx)=>{const it=sec.items.find(i=>i.id===id);patch(id,{bullets:it.bullets.filter((_,i)=>i!==idx)})};
+  return(
+    <div>
+      {sec.items.map((it, idx)=>(
+        <div key={it.id} className={`cv-item ${idx===0?'first-item':''}`} style={{marginBottom:12,paddingBottom:10,borderBottom:"0.5px solid #f1f5f9"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+            <div style={{flex:1}}>
+              <Ed value={it.role} onChange={v=>patch(it.id,{role:v})} tag="span" ph="عنوان شغلی" style={{fontWeight:700,color:"#0f172a"}}/>
+              <span style={{color:"#94a3b8",margin:"0 5px"}}>—</span>
+              <Ed value={it.company} onChange={v=>patch(it.id,{company:v})} tag="span" ph="نام شرکت"/>
+              {it.location&&<span style={{color:"#94a3b8",fontSize:11}}> · <Ed value={it.location} onChange={v=>patch(it.id,{location:v})} ph="شهر"/></span>}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+              <Ed value={it.period} onChange={v=>patch(it.id,{period:v})} ph="بازه زمانی" style={{fontSize:11,color:"#64748b",whiteSpace:"nowrap",direction:"rtl"}}/>
+              <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+            </div>
+          </div>
+          <ul style={{margin:"5px 16px 3px 0"}}>
+            {it.bullets.map((b,idx)=>(
+              <li key={idx} style={{display:"flex",alignItems:"flex-start",gap:4,marginBottom:2,listStyle:"disc",direction:"rtl"}}>
+                <Ed value={b} onChange={v=>editB(it.id,idx,v)} tag="span" multi ph="توضیح دستاورد..." style={{flex:1}}/>
+                <button className="no-print" onClick={()=>remB(it.id,idx)} style={{...delBtn,fontSize:10,lineHeight:1.8}} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#e2e8f0"}>✕</button>
+              </li>
+            ))}
+          </ul>
+          <button className="no-print" onClick={()=>addB(it.id)} style={addSmallBtn}>+ افزودن بند</button>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={addSectionBtn}>+ افزودن سابقه کاری</button>
+    </div>
+  );
+}
+
+function EduSec({sec,upd}){
+  const add=()=>upd({...sec,items:[...sec.items,{id:uid(),institution:"نام دانشگاه",degree:"مقطع و رشته تحصیلی",period:"۱۳۹۰ – ۱۳۹۴",gpa:""}]});
+  const rem=(id)=>upd({...sec,items:sec.items.filter(i=>i.id!==id)});
+  const patch=(id,p)=>upd({...sec,items:sec.items.map(i=>i.id===id?{...i,...p}:i)});
+  return(
+    <div>
+      {sec.items.map((it, idx)=>(
+        <div key={it.id} className={`cv-item ${idx===0?'first-item':''}`} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:10}}>
+          <div style={{flex:1}}>
+            <Ed value={it.degree} onChange={v=>patch(it.id,{degree:v})} tag="span" ph="مقطع و رشته" style={{fontWeight:700,color:"#0f172a"}}/>
+            <span style={{color:"#94a3b8",margin:"0 5px"}}>—</span>
+            <Ed value={it.institution} onChange={v=>patch(it.id,{institution:v})} tag="span" ph="نام دانشگاه"/>
+            {it.gpa&&<span style={{color:"#94a3b8",fontSize:11}}> · معدل: <Ed value={it.gpa} onChange={v=>patch(it.id,{gpa:v})} ph="معدل"/></span>}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+            <Ed value={it.period} onChange={v=>patch(it.id,{period:v})} ph="بازه تحصیل" style={{fontSize:11,color:"#64748b",whiteSpace:"nowrap",direction:"rtl"}}/>
+            <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+          </div>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={addSectionBtn}>+ افزودن تحصیل</button>
+    </div>
+  );
+}
+
+function SkillsSec({sec,upd}){
+  const add=()=>upd({...sec,groups:[...sec.groups,{id:uid(),label:"دسته‌بندی",items:"مهارت ۱، مهارت ۲"}]});
+  const rem=(id)=>upd({...sec,groups:sec.groups.filter(g=>g.id!==id)});
+  const patch=(id,p)=>upd({...sec,groups:sec.groups.map(g=>g.id===id?{...g,...p}:g)});
+  return(
+    <div className="cv-item first-item" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+      {sec.groups.map(g=>(
+        <div key={g.id} style={{background:"#f8fafc",borderRadius:6,padding:"7px 10px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
+            <Ed value={g.label} onChange={v=>patch(g.id,{label:v})} tag="span" ph="دسته‌بندی" style={{fontWeight:700,fontSize:12}}/>
+            <button className="no-print" onClick={()=>rem(g.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+          </div>
+          <Ed value={g.items} onChange={v=>patch(g.id,{items:v})} tag="div" ph="مهارت ۱، مهارت ۲، ..." style={{fontSize:11,color:"#475569",direction:"ltr",textAlign:"right"}}/>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={{...addSectionBtn,gridColumn:"1/-1"}}>+ افزودن دسته‌بندی</button>
+    </div>
+  );
+}
+
+function ProjSec({sec,upd}){
+  const add=()=>upd({...sec,items:[...sec.items,{id:uid(),name:"نام پروژه",link:"",description:"توضیح پروژه",tech:""}]});
+  const rem=(id)=>upd({...sec,items:sec.items.filter(i=>i.id!==id)});
+  const patch=(id,p)=>upd({...sec,items:sec.items.map(i=>i.id===id?{...i,...p}:i)});
+  return(
+    <div>
+      {sec.items.map((it, idx)=>(
+        <div key={it.id} className={`cv-item ${idx===0?'first-item':''}`} style={{marginBottom:10,paddingBottom:8,borderBottom:"0.5px solid #f1f5f9"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <Ed value={it.name} onChange={v=>patch(it.id,{name:v})} tag="span" ph="نام پروژه" style={{fontWeight:700,color:"#0f172a"}}/>
+              {it.link&&<><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span><Ed value={it.link} onChange={v=>patch(it.id,{link:v})} tag="span" ph="لینک" style={{fontSize:11,color:"#6366f1",direction:"ltr"}}/></>}
+            </div>
+            <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+          </div>
+          <Ed value={it.description} onChange={v=>patch(it.id,{description:v})} tag="div" multi ph="توضیح پروژه..." style={{color:"#475569",marginTop:3,lineHeight:1.7,fontSize:12}}/>
+          <div style={{fontSize:11,color:"#64748b",marginTop:3}}><strong>فناوری‌ها: </strong><Ed value={it.tech} onChange={v=>patch(it.id,{tech:v})} tag="span" ph="React، Node.js، ..." style={{direction:"ltr"}}/></div>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={addSectionBtn}>+ افزودن پروژه</button>
+    </div>
+  );
+}
+
+function CertSec({sec,upd}){
+  const add=()=>upd({...sec,items:[...sec.items,{id:uid(),name:"نام گواهینامه",issuer:"صادرکننده",date:"۱۴۰۲"}]});
+  const rem=(id)=>upd({...sec,items:sec.items.filter(i=>i.id!==id)});
+  const patch=(id,p)=>upd({...sec,items:sec.items.map(i=>i.id===id?{...i,...p}:i)});
+  return(
+    <div>
+      {sec.items.map((it, idx)=>(
+        <div key={it.id} className={`cv-item ${idx===0?'first-item':''}`} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:7}}>
+          <div>
+            <Ed value={it.name} onChange={v=>patch(it.id,{name:v})} tag="span" ph="نام گواهینامه" style={{fontWeight:700}}/>
+            <span style={{color:"#94a3b8",margin:"0 4px"}}>·</span>
+            <Ed value={it.issuer} onChange={v=>patch(it.id,{issuer:v})} tag="span" ph="صادرکننده" style={{fontSize:12,color:"#475569"}}/>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <Ed value={it.date} onChange={v=>patch(it.id,{date:v})} ph="سال" style={{fontSize:11,color:"#64748b",direction:"rtl"}}/>
+            <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+          </div>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={addSectionBtn}>+ افزودن گواهینامه</button>
+    </div>
+  );
+}
+
+function LangSec({sec,upd}){
+  const add=()=>upd({...sec,items:[...sec.items,{id:uid(),name:"زبان",level:"متوسط"}]});
+  const rem=(id)=>upd({...sec,items:sec.items.filter(i=>i.id!==id)});
+  const patch=(id,p)=>upd({...sec,items:sec.items.map(i=>i.id===id?{...i,...p}:i)});
+  return(
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+      {sec.items.map((it, idx)=>(
+        <div key={it.id} className={`cv-item ${idx===0?'first-item':''}`} style={{background:"#f8fafc",borderRadius:6,padding:"7px 10px",display:"flex",alignItems:"center",gap:6}}>
+          <Ed value={it.name} onChange={v=>patch(it.id,{name:v})} tag="span" ph="زبان" style={{fontWeight:600,flex:1}}/>
+          <Ed value={it.level} onChange={v=>patch(it.id,{level:v})} tag="span" ph="سطح" style={{fontSize:10,color:"#64748b"}}/>
+          <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
+        </div>
+      ))}
+      <button className="no-print" onClick={add} style={{...addSectionBtn,gridColumn:"1/-1"}}>+ افزودن زبان</button>
+    </div>
+  );
+}
+
+function CustomSec({sec,upd}){
+  return <div className="cv-item first-item"><Ed value={sec.content} onChange={v=>upd({...sec,content:v})} tag="div" multi ph="محتوای دلخواه..." style={{color:"#334155",lineHeight:1.8,minHeight:36}}/></div>;
+}
+
+const RENDERERS={header:HeaderSec,summary:SumSec,experience:ExpSec,education:EduSec,skills:SkillsSec,projects:ProjSec,certifications:CertSec,languages:LangSec,custom:CustomSec};
+
+// Shared button styles
+const delBtn={background:"none",border:"none",color:"#cbd5e1",cursor:"pointer",fontSize:11,padding:"0 2px",transition:"color .1s"};
+const addSmallBtn={background:"none",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:11,padding:"2px 0"};
+const addSectionBtn={background:"none",border:"1px dashed #cbd5e1",color:"#94a3b8",borderRadius:6,padding:"5px 12px",cursor:"pointer",fontSize:11,marginTop:4,width:"100%",direction:"rtl"};
+
+const THEMES={modern:{name:"مدرن",dark:true},classic:{name:"کلاسیک",dark:false},minimal:{name:"مینیمال",dark:false},executive:{name:"اجرایی",dark:true}};
+const ACCENTS=["#4f46e5","#0891b2","#059669","#dc2626","#d97706","#7c3aed","#db2777","#0f172a","#1d4ed8","#0d9488"];
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function App(){
+  const [sections,setSections]=useState([mkHeader(),mkSummary(),mkExp(),mkEdu(),mkSkills()]);
+  const [theme,setTheme]=useState("modern");
+  const [ac,setAc]=useState("#4f46e5");
+  const [fs,setFs]=useState(13);
+  const [dragging,setDragging]=useState(null);
+  const [dragOver,setDragOver]=useState(null);
+  const [exporting,setExporting]=useState(false);
+  const [sideOpen,setSideOpen]=useState(true);
+  const [cvHeight,setCvHeight]=useState(0);
+  const cvRef=useRef(null);
+  const dragIdx=useRef(null);
+  const dragOIdx=useRef(null);
+
+  useEffect(()=>{
+    if(!cvRef.current)return;
+    const measure=()=>{if(cvRef.current)setCvHeight(cvRef.current.scrollHeight);};
+    measure();
+    const ro=new ResizeObserver(measure);
+    ro.observe(cvRef.current);
+    return ()=>ro.disconnect();
+  },[sections,fs,theme,ac]);
+
+  const upd=useCallback((u)=>setSections(s=>s.map(sec=>sec.id===u.id?u:sec)),[]);
+  const addSec=(type)=>setSections(s=>[...s,DEFAULTS[type]()]);
+  const remSec=(id)=>setSections(s=>s.filter(sec=>sec.id!==id));
+  const mvUp=(i)=>setSections(s=>{if(!i)return s;const n=[...s];[n[i-1],n[i]]=[n[i],n[i-1]];return n;});
+  const mvDn=(i)=>setSections(s=>{if(i>=s.length-1)return s;const n=[...s];[n[i],n[i+1]]=[n[i+1],n[i]];return n;});
+
+  const onDS=(e,i)=>{dragIdx.current=i;setDragging(i);e.dataTransfer.effectAllowed="move";};
+  const onDE=(_,i)=>{dragOIdx.current=i;setDragOver(i);};
+  const onDEnd=()=>{
+    const f=dragIdx.current,t=dragOIdx.current;
+    if(f!==null&&t!==null&&f!==t)setSections(s=>{const n=[...s];const[m]=n.splice(f,1);n.splice(t,0,m);return n;});
+    dragIdx.current=null;dragOIdx.current=null;setDragging(null);setDragOver(null);
+  };
+
+  const exportPDF=async()=>{
+    setExporting(true);
+    try {
+      // 1. Wait for fonts to load
+      if(document.fonts&&document.fonts.ready){await document.fonts.ready;}
+      await new Promise(r=>setTimeout(r,200));
+
+      // 2. Clone the CV to manipulate DOM invisibly for pagination
+      const clone = cvRef.current.cloneNode(true);
+      const printContainer = document.createElement('div');
+      printContainer.style.position = 'absolute';
+      printContainer.style.top = '-9999px';
+      printContainer.style.left = '0';
+      printContainer.style.width = '794px'; // Base A4 width at 96 DPI
+      printContainer.style.background = '#ffffff';
+      printContainer.style.direction = 'rtl';
+      printContainer.appendChild(clone);
+      document.body.appendChild(printContainer);
+
+      // Add a class that hides elements tagged as no-print and empty placeholders
+      clone.classList.add('pdf-export');
+
+      // 3. Smart DOM Pagination Algorithm
+      const PAGE_HEIGHT = 1123; // A4 height at 96 DPI
+      const MARGIN = 45; // Top and Bottom padding per page (~12mm)
+      const USABLE = PAGE_HEIGHT - MARGIN * 2;
+
+      clone.style.position = 'relative';
+      clone.style.paddingTop = `${MARGIN}px`;
+      clone.style.paddingBottom = `${MARGIN}px`;
+      clone.style.boxShadow = 'none';
+      clone.style.minHeight = 'auto';
+
+      const items = Array.from(clone.querySelectorAll('.cv-item'));
+      
+      items.forEach(item => {
+        let elem = item;
+        let itemY = 0;
+        
+        // Calculate absolute top offset relative to the clone container
+        while (elem && elem !== clone) {
+          itemY += elem.offsetTop;
+          elem = elem.offsetParent;
+        }
+
+        const itemH = item.offsetHeight;
+        const pageNumber = Math.floor(itemY / PAGE_HEIGHT);
+        const limitY = (pageNumber + 1) * PAGE_HEIGHT - MARGIN;
+
+        // If item exceeds current page bounds and isn't massively huge
+        if (itemY + itemH > limitY && itemH < USABLE) {
+          const nextPageY = (pageNumber + 1) * PAGE_HEIGHT + MARGIN;
+          let pushAmount = nextPageY - itemY;
+
+          let targetToPush = item;
+          
+          // Anti-orphan logic: If it's the first item, try to push the section title too
+          if (item.classList.contains('first-item')) {
+            const titleElem = item.closest('.sec-wrap')?.querySelector('.sec-title');
+            if (titleElem) {
+              targetToPush = titleElem;
+              let titleY = 0;
+              let tElem = titleElem;
+              while (tElem && tElem !== clone) {
+                titleY += tElem.offsetTop;
+                tElem = tElem.offsetParent;
+              }
+              pushAmount = nextPageY - titleY;
+            }
+          }
+
+          // Apply margin to physically push the content to the next page
+          const currentMt = parseFloat(window.getComputedStyle(targetToPush).marginTop) || 0;
+          targetToPush.style.marginTop = `${currentMt + pushAmount}px`;
+        }
+      });
+
+      // 4. Generate High-Res Image from the Paginated Clone
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 794
+      });
+
+      document.body.removeChild(printContainer);
+
+      // 5. Slice precisely into PDF pages
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const pageW = 210;
+      const pageH = 297;
+      
+      const pxPerMm = canvas.width / pageW;
+      const totalH = canvas.height / pxPerMm;
+      const numPages = Math.max(1, Math.ceil(totalH / pageH - 0.02)); // Slight tolerance
+
+      for (let p = 0; p < numPages; p++) {
+        if (p > 0) pdf.addPage();
+        const srcY = Math.round(p * pageH * pxPerMm);
+        const srcH = Math.round(Math.min(pageH * pxPerMm, canvas.height - srcY));
+        if (srcH <= 0) break;
+
+        const tmp = document.createElement("canvas");
+        tmp.width = canvas.width;
+        tmp.height = srcH;
+        const ctx = tmp.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, tmp.width, tmp.height);
+        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+        const sliceH = srcH / pxPerMm;
+        const imgData = tmp.toDataURL("image/png");
+        
+        // Add full page image (margins are already baked-in from the DOM)
+        pdf.addImage(imgData, "PNG", 0, 0, pageW, sliceH, undefined, "FAST");
+      }
+
+      pdf.save("resume.pdf");
+      setExporting(false);
+    } catch(err) {
+      console.error(err);
+      setExporting(false);
+    }
+  };
+
+  const handlePrint=()=>{window.print();};
+
+  const darkHdr=THEMES[theme]?.dark;
+
+  return(
+    <div className="app-root" style={{display:"flex",height:"100vh",overflow:"hidden",direction:"rtl",fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+      <style>{`
+        [data-ph]:empty::before{content:attr(data-ph);color:#94a3b8;font-style:normal;pointer-events:none}
+        [contenteditable]:focus{background:rgba(99,102,241,.06);border-radius:2px;outline:none}
+        .sec-ctrl{position:absolute;left:-40px;right:auto;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity .15s;pointer-events:none}
+        .sec-wrap:hover .sec-ctrl{opacity:1;pointer-events:auto}
+        .sc-btn{width:26px;height:26px;background:#fff;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#64748b;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:all .1s}
+        .sc-btn:hover{background:${ac};color:#fff;border-color:${ac}}
+        .sb-select{width:100%;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:6px 8px;font-size:13px;cursor:pointer;font-family:'Vazirmatn',Tahoma,sans-serif;direction:rtl}
+        .add-btn{background:#0f172a;border:1px solid #334155;color:#94a3b8;border-radius:6px;padding:7px 6px;font-size:11px;cursor:pointer;text-align:center;transition:all .15s;font-family:'Vazirmatn',Tahoma,sans-serif}
+        .add-btn:hover{background:${ac};border-color:${ac};color:#fff}
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
+      `}</style>
+
+      {/* Sidebar — on the RIGHT for RTL */}
+      <div className="sidebar no-print" style={{width:sideOpen?256:0,minWidth:sideOpen?256:0,overflow:"hidden",transition:"all .2s",background:"#1e293b",display:"flex",flexDirection:"column",order:2}}>
+        <div style={{width:256,height:"100%",overflowY:"auto",display:"flex",flexDirection:"column"}}>
+
+          {/* Logo */}
+          <div style={{padding:"14px 16px 12px",borderBottom:"1px solid #334155",display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:28,height:28,borderRadius:6,background:ac,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>📄</div>
+            <span style={{color:"#f1f5f9",fontWeight:700,fontSize:14}}>سازنده رزومه</span>
+          </div>
+
+          {/* Theme */}
+          <div style={{padding:12,borderBottom:"1px solid #334155"}}>
+            <div style={sideLabel}>قالب</div>
+            <select className="sb-select" value={theme} onChange={e=>setTheme(e.target.value)}>
+              {Object.entries(THEMES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
+            </select>
+          </div>
+
+          {/* Accent color */}
+          <div style={{padding:12,borderBottom:"1px solid #334155"}}>
+            <div style={sideLabel}>رنگ اصلی</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+              {ACCENTS.map(c=>(
+                <div key={c} onClick={()=>setAc(c)} style={{width:22,height:22,borderRadius:"50%",background:c,cursor:"pointer",border:ac===c?"2px solid #fff":"2px solid transparent",boxShadow:ac===c?`0 0 0 2px ${c}`:"none",transition:"all .15s"}}/>
+              ))}
+            </div>
+            <input type="color" value={ac} onChange={e=>setAc(e.target.value)} style={{width:"100%",height:30,border:"1px solid #334155",borderRadius:6,cursor:"pointer",background:"none"}}/>
+          </div>
+
+          {/* Font size */}
+          <div style={{padding:12,borderBottom:"1px solid #334155"}}>
+            <div style={{...sideLabel,display:"flex",justifyContent:"space-between"}}>
+              <span>اندازه متن</span><span style={{color:"#e2e8f0"}}>{fs}px</span>
+            </div>
+            <input type="range" min={10} max={16} value={fs} onChange={e=>setFs(+e.target.value)} style={{width:"100%",accentColor:ac,direction:"ltr"}}/>
+          </div>
+
+          {/* Add sections */}
+          <div style={{padding:"12px 12px 6px"}}>
+            <div style={sideLabel}>افزودن بخش</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>
+              {Object.entries(SECTION_LABELS).map(([k,v])=>(
+                <button key={k} className="add-btn" onClick={()=>addSec(k)}>{v}</button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{flex:1}}/>
+
+          {/* Export */}
+          <div style={{padding:12,display:"flex",flexDirection:"column",gap:6}}>
+            <button onClick={exportPDF} disabled={exporting} style={{width:"100%",background:ac,color:"#fff",border:"none",borderRadius:8,padding:"12px 0",fontSize:14,fontWeight:700,cursor:exporting?"not-allowed":"pointer",opacity:exporting?.6:1,fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+              {exporting?"در حال ایجاد PDF…":"⬇  دریافت PDF"}
+            </button>
+            <button onClick={handlePrint} disabled={exporting} style={{width:"100%",background:"transparent",color:ac,border:`1.5px solid ${ac}`,borderRadius:8,padding:"10px 0",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+              🖨  چاپ / ذخیره PDF
+            </button>
+            <p style={{textAlign:"center",fontSize:10,color:"#475569",marginTop:4,marginBottom:0}}>مدیریت خودکار پرش صفحات و حاشیه</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Toggle button — left side for RTL */}
+      <button className="sidebar-toggle no-print" onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",right:sideOpen?244:0,left:"auto",top:"50%",transform:"translateY(-50%)",zIndex:50,background:"#1e293b",color:"#94a3b8",border:"none",borderRadius:"5px 0 0 5px",padding:"8px 5px",cursor:"pointer",transition:"right .2s",fontSize:14}}>
+        {sideOpen?"▶":"◀"}
+      </button>
+
+      {/* CV Preview */}
+      <div className="preview-area" style={{flex:1,overflowY:"auto",padding:24,background:"#cbd5e1",display:"flex",flexDirection:"column",alignItems:"center",order:1}}>
+        <p className="preview-help no-print" style={{textAlign:"center",fontSize:12,color:"#475569",marginTop:0,direction:"rtl",marginBottom:16}}>
+          روی هر متن کلیک کنید تا ویرایش کنید · بخش‌ها را بکشید تا جابجا کنید<br/>
+          <strong>در خروجی PDF، متون به‌صورت خودکار و هوشمند از حاشیه‌های قرمز رنگ رد می‌شوند.</strong>
+        </p>
+
+        <div className="preview-wrapper" style={{position:"relative",width:"100%",maxWidth:794}}>
+          {/* CV Paper */}
+          <div ref={cvRef} className="cv-paper" style={{background:"#fff",width:"100%",minHeight:1060,fontSize:fs,lineHeight:1.65,color:"#1e293b",boxShadow:"0 4px 30px rgba(0,0,0,.15)",fontFamily:"'Vazirmatn',Tahoma,sans-serif",direction:"rtl"}}>
+            {sections.map((sec,idx)=>{
+              const Comp=RENDERERS[sec.type];
+              if(!Comp)return null;
+              return(
+                <div key={sec.id} className="sec-wrap"
+                  style={{position:"relative",opacity:dragging===idx?.4:1,borderTop:dragOver===idx&&dragOver!==dragging?`2px solid ${ac}`:"none"}}
+                  draggable onDragStart={e=>onDS(e,idx)} onDragEnter={e=>onDE(e,idx)} onDragEnd={onDEnd} onDragOver={e=>e.preventDefault()}>
+
+                  {sec.type==="header"
+                    ?<HeaderSec sec={sec} upd={upd} ac={ac} theme={theme}/>
+                    :(
+                      <div style={{padding:"12px 28px"}}>
+                        <div className="sec-title" style={{fontSize:Math.round(fs*.95),fontWeight:700,color:ac,textTransform:"none",letterSpacing:0,paddingBottom:4,borderBottom:`2px solid ${ac}`,marginBottom:10}}>
+                          <Ed value={sec.title} onChange={v=>upd({...sec,title:v})} ph="عنوان بخش"/>
+                        </div>
+                        <Comp sec={sec} upd={upd} ac={ac}/>
+                      </div>
+                    )
+                  }
+
+                  {/* Section controls — LEFT side for RTL layout */}
+                  <div className="sec-ctrl">
+                    <button className="sc-btn" title="برای جابجایی بکشید" style={{cursor:"grab"}}>⠿</button>
+                    <button className="sc-btn" onClick={()=>mvUp(idx)} title="بالا">↑</button>
+                    <button className="sc-btn" onClick={()=>mvDn(idx)} title="پایین">↓</button>
+                    {sec.type!=="header"&&<button className="sc-btn" onClick={()=>remSec(sec.id)} title="حذف" style={{color:"#ef4444"}}
+                      onMouseOver={e=>{e.currentTarget.style.background="#ef4444";e.currentTarget.style.color="#fff"}}
+                      onMouseOut={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#ef4444"}}>✕</button>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Visual Margin Overlay */}
+          {!exporting && Array.from({length:Math.max(0,Math.ceil(cvHeight/1123)-1)}).map((_,i)=>(
+            <div key={`pm${i}`} className="page-marker no-print" style={{
+              position:"absolute",left:0,right:0,top:(i+1)*1123 - 45, height: 90,
+              background:"rgba(239, 68, 68, 0.08)",
+              display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",zIndex:5,
+              borderTop:"1px dashed rgba(239, 68, 68, 0.5)", borderBottom:"1px dashed rgba(239, 68, 68, 0.5)"
+            }}>
+              <span style={{background:"#ef4444",color:"#fff",fontSize:11,padding:"4px 12px",borderRadius:12,fontWeight:600,direction:"rtl",boxShadow:"0 2px 5px rgba(0,0,0,.15)"}}>حاشیه شکست صفحه {i+2}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{height:40}}></div>
+      </div>
+    </div>
+  );
+}
+
+const sideLabel={fontSize:10,fontWeight:600,color:"#64748b",textTransform:"none",letterSpacing:0,marginBottom:6,display:"flex",justifyContent:"space-between"};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
