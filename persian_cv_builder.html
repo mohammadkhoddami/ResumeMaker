@@ -25,11 +25,15 @@ html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-s
   .cv-paper{box-shadow:none!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important}
   
   /* Prevent context breaking natively */
-  .sec-wrap, .cv-item {break-inside:avoid;page-break-inside:avoid}
-  .sec-title {break-after:avoid;page-break-after:avoid}
+  .sec-wrap {break-inside:auto;page-break-inside:auto}
+  .cv-item {break-inside:avoid!important;page-break-inside:avoid!important}
+  .sec-title {break-after:avoid!important;page-break-after:avoid!important}
   
   /* Remove placeholders on print */
   [data-ph]:empty::before {content:none!important}
+
+  /* Force background colors to print natively */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 
 /* Styles applied during smart PDF export */
@@ -141,6 +145,7 @@ function HeaderSec({sec,upd,ac,theme}){
   const d=sec.data;
   const set=(k,v)=>upd({...sec,data:{...d,[k]:v}});
   const darkBg=theme==="modern"||theme==="executive";
+
   return(
     <div className="cv-item first-item" style={{padding:"24px 28px 18px",background:darkBg?ac:"transparent",color:darkBg?"#fff":"#0f172a",borderBottom:!darkBg?`3px solid ${ac}`:"none",direction:"rtl"}}>
       <Ed value={d.name} onChange={v=>set("name",v)} tag="div" ph="نام و نام‌خانوادگی" style={{fontSize:28,fontWeight:700,lineHeight:1.2,letterSpacing:0}}/>
@@ -260,7 +265,10 @@ function ProjSec({sec,upd}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <Ed value={it.name} onChange={v=>patch(it.id,{name:v})} tag="span" ph="نام پروژه" style={{fontWeight:700,color:"#0f172a"}}/>
-              {it.link&&<><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span><Ed value={it.link} onChange={v=>patch(it.id,{link:v})} tag="span" ph="لینک" style={{fontSize:11,color:"#6366f1",direction:"ltr"}}/></>}
+              {it.link&&<>
+                <span style={{color:"#94a3b8",margin:"0 4px"}}>·</span>
+                <Ed value={it.link} onChange={v=>patch(it.id,{link:v})} tag="span" ph="لینک" style={{fontSize:11,color:"#6366f1",direction:"ltr"}}/>
+              </>}
             </div>
             <button className="no-print" onClick={()=>rem(it.id)} style={delBtn} onMouseOver={e=>e.target.style.color="#ef4444"} onMouseOut={e=>e.target.style.color="#cbd5e1"}>✕</button>
           </div>
@@ -686,13 +694,16 @@ function App(){
               <input type="file" accept=".json" ref={fileInputRef} onChange={importJSON} style={{display:"none"}} />
             </div>
 
-            <button onClick={exportPDF} disabled={exporting} style={{width:"100%",background:ac,color:"#fff",border:"none",borderRadius:8,padding:"12px 0",fontSize:14,fontWeight:700,cursor:exporting?"not-allowed":"pointer",opacity:exporting?.6:1,fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
-              {exporting?"در حال ایجاد PDF…":"⬇  دریافت PDF"}
+            <hr style={{border:"none", borderTop:"1px solid #334155", margin:"4px 0"}}/>
+
+            <button onClick={handlePrint} disabled={exporting} style={{width:"100%",background:ac,color:"#fff",border:"none",borderRadius:8,padding:"12px 0",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+              📄 دریافت PDF (متنی و استاندارد)
             </button>
-            <button onClick={handlePrint} disabled={exporting} style={{width:"100%",background:"transparent",color:ac,border:`1.5px solid ${ac}`,borderRadius:8,padding:"10px 0",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
-              🖨  چاپ / ذخیره PDF
+            <p style={{textAlign:"center",fontSize:10,color:"#94a3b8",marginTop:0,marginBottom:4}}>در پنجره باز شده گزینه <strong>Save as PDF</strong> را انتخاب کنید.</p>
+
+            <button onClick={exportPDF} disabled={exporting} style={{width:"100%",background:"transparent",color:ac,border:`1.5px solid ${ac}`,borderRadius:8,padding:"10px 0",fontSize:12,fontWeight:600,cursor:exporting?"not-allowed":"pointer",opacity:exporting?.6:1,fontFamily:"'Vazirmatn',Tahoma,sans-serif"}}>
+              {exporting?"در حال ایجاد خروجی تصویری…":"🖼️ دریافت PDF (نسخه تصویری)"}
             </button>
-            <p style={{textAlign:"center",fontSize:10,color:"#475569",marginTop:4,marginBottom:0}}>مدیریت خودکار پرش صفحات و حاشیه</p>
           </div>
         </div>
       </div>
