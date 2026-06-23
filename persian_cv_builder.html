@@ -11,13 +11,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-serif;background:#e2e8f0;height:100vh;overflow:hidden}
+html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-serif;background:#e2e8f0;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#475569;border-radius:3px}
 
 /* Enhanced print styles for native printing */
 @media print{
   @page{size:A4 portrait;margin:15mm 12mm}
-  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;font-family:'Vazirmatn',Tahoma,sans-serif!important}
   .app-root{display:block!important;height:auto!important;overflow:visible!important}
   .no-print,.sidebar,.sidebar-toggle,.preview-help,.page-marker,.sec-ctrl{display:none!important}
   .preview-area{padding:0!important;overflow:visible!important;background:#fff!important;display:block!important}
@@ -32,8 +32,25 @@ html,body{direction:rtl;font-family:'Vazirmatn',Tahoma,'Arial Unicode MS',sans-s
   /* Remove placeholders on print */
   [data-ph]:empty::before {content:none!important}
 
-  /* Force background colors to print natively */
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* Handle editable text vs clickable links on print */
+  .only-print { display: none !important; }
+  a.only-print { text-decoration: none; color: inherit; }
+
+  /* Force background colors, sharp text, and exact fonts to print natively */
+  * { 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+    font-family: 'Vazirmatn', Tahoma, sans-serif !important;
+    /* FIX: geometricPrecision stops Chrome/Edge from artificially thickening Alef ("ا") */
+    text-rendering: geometricPrecision !important;
+    /* FIX: prevents the browser from applying faux-bolding to characters */
+    font-synthesis: none !important; 
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    /* FIX: Forces subpixel rendering for crisper text in PDF */
+    -webkit-font-smoothing: subpixel-antialiased !important;
+  }
 }
 
 /* Styles applied during smart PDF export */
