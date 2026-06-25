@@ -163,19 +163,36 @@ function HeaderSec({sec,upd,ac,theme}){
   const set=(k,v)=>upd({...sec,data:{...d,[k]:v}});
   const darkBg=theme==="modern"||theme==="executive";
 
+  const getHref = (type, val) => {
+    if(!val) return "#";
+    if(type === 'email') return `mailto:${val}`;
+    if(type === 'phone') return `tel:${val}`;
+    if(type === 'location') return `#`;
+    return val.startsWith('http') ? val : `https://${val}`;
+  };
+
+  const HEADER_FIELDS = [
+    ["email", "✉", "ایمیل"],
+    ["phone", "📞", "شماره تماس"],
+    ["location", "📍", "مکان"],
+    ["linkedin", "🔗", "لینکدین"],
+    ["website", "🌐", "وب‌سایت"],
+    ["website3", "🌐", "لینک ۳"]
+  ];
+
   return(
     <div className="cv-item first-item" style={{padding:"24px 28px 18px",background:darkBg?ac:"transparent",color:darkBg?"#fff":"#0f172a",borderBottom:!darkBg?`3px solid ${ac}`:"none",direction:"rtl"}}>
       <Ed value={d.name} onChange={v=>set("name",v)} tag="div" ph="نام و نام‌خانوادگی" style={{fontSize:28,fontWeight:700,lineHeight:1.2,letterSpacing:0}}/>
       <Ed value={d.title} onChange={v=>set("title",v)} tag="div" ph="عنوان شغلی" style={{fontSize:15,opacity:.82,marginTop:4,fontWeight:400}}/>
       <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:10,direction:"rtl"}}>
-        {[["email","✉"],["phone","📞"],["location","📍"],["linkedin","🔗"],["website","🌐"]].map(([k,ico])=>
+        {HEADER_FIELDS.map(([k,ico,label])=>
           d[k]?(
             <span key={k} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,opacity:.88,direction:"ltr"}}>
               <span>{ico}</span>
               <Ed value={d[k]} onChange={v=>set(k,v)} ph={k} style={{direction:"ltr"}}/>
             </span>
           ):(
-            <span key={k} className="no-print" onClick={()=>set(k,k==="website"?"yoursite.com":"")} style={{fontSize:10,opacity:.35,cursor:"pointer",border:`1px dashed ${darkBg?"rgba(255,255,255,.4)":"#94a3b8"}`,borderRadius:3,padding:"1px 5px",direction:"rtl"}}>+ {k}</span>
+            <span key={k} className="no-print" onClick={()=>set(k,k.startsWith("website")?"yoursite.com":"")} style={{fontSize:10,opacity:.35,cursor:"pointer",border:`1px dashed ${darkBg?"rgba(255,255,255,.4)":"#94a3b8"}`,borderRadius:3,padding:"1px 5px",direction:"rtl"}}>+ {label}</span>
           )
         )}
       </div>
