@@ -3,6 +3,7 @@ import type { User } from "firebase/auth";
 import { subscribeToCVDoc, saveCVDoc } from "../services/firebase";
 import { useCVStore } from "../store/cvStore";
 import { useUIStore } from "../store/uiStore";
+import { showToast } from "../components/ui/Toast";
 import type { CVFirestoreDoc } from "../types/firebase.types";
 import type { CVDocument } from "../types/cv.types";
 
@@ -28,7 +29,6 @@ function isDefaultDocument(doc: CVDocument): boolean {
 }
 
 export function useCloudSync(user: User | null) {
-  const hydratedRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const docMetaRef = useRef<{ createdAt: number; version: number }>({
     createdAt: Date.now(),
@@ -36,18 +36,17 @@ export function useCloudSync(user: User | null) {
   });
 
   useEffect(() => {
-    hydratedRef.current = false;
-  }, [user?.uid]);
-
-  useEffect(() => {
     if (!user) return;
+
+    useCVStore.getState().setHydrated(false);
 
     const unsubscribe = subscribeToCVDoc(
       user.uid,
       APP_ID,
       (data: CVFirestoreDoc) => {
-        if (!hydratedRef.current) {
-          hydratedRef.current = true;
+        const { hydrated } = useCVStore.getState();
+        if (!hydrated) {
+          useCVStore.getState().setHydrated(true);
           docMetaRef.current = {
             createdAt: data.createdAt,
             version: data.version,
@@ -88,8 +87,10 @@ export function useCloudSync(user: User | null) {
 
       await saveCVDoc(user.uid, APP_ID, firestoreDoc);
       setLastSavedAt(new Date());
+      showToast("با موفقیت ذخیره شد", "success");
     } catch (err) {
       console.error("Failed to save to cloud:", err);
+      showToast("خطا در ذخیره‌سازی ابری", "error");
     } finally {
       setSaving(false);
     }

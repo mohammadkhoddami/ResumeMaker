@@ -28,6 +28,8 @@ const SECTION_FACTORIES: Record<SectionType, () => CVSection> = {
 
 export interface CVStore {
   document: CVDocument;
+  hydrated: boolean;
+  setHydrated: (h: boolean) => void;
   updateSection: (id: string, patch: Partial<CVSection>) => void;
   addSection: (type: SectionType) => void;
   removeSection: (id: string) => void;
@@ -43,6 +45,9 @@ export const useCVStore = create<CVStore>()(
   persist(
     (set) => ({
       document: createDefaultDocument(),
+      hydrated: false,
+
+      setHydrated: (h) => set({ hydrated: h }),
 
       updateSection: (id, patch) =>
         set((state) => {

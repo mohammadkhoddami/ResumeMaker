@@ -1,6 +1,8 @@
 import { useRef, useCallback } from "react";
 import { useCVStore } from "../../store/cvStore";
 import { useUIStore } from "../../store/uiStore";
+import { validateCVDocument, ValidationError } from "../../services/jsonValidation";
+import { showToast } from "../ui/Toast";
 
 interface ExportPanelProps {
   saveToCloud: () => Promise<void>;
@@ -14,8 +16,8 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleJsonDownload = useCallback(() => {
-    const document = useCVStore.getState().document;
-    const blob = new Blob([JSON.stringify(document, null, 2)], {
+    const cvDoc = useCVStore.getState().document;
+    const blob = new Blob([JSON.stringify(cvDoc, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -35,10 +37,21 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
       reader.onload = (event) => {
         try {
           const parsed = JSON.parse(event.target?.result as string);
-          useCVStore.getState().loadDocument(parsed);
-        } catch {
-          console.error("Invalid JSON file");
+          const validated = validateCVDocument(parsed);
+          useCVStore.getState().loadDocument(validated);
+          showToast("فایل JSON با موفقیت بارگذاری شد", "success");
+        } catch (err) {
+          if (err instanceof ValidationError) {
+            showToast(`خطا در فایل: ${err.message}`, "error");
+          } else if (err instanceof SyntaxError) {
+            showToast("فایل JSON نامعتبر است", "error");
+          } else {
+            showToast("خطای ناشناخته در خواندن فایل", "error");
+          }
         }
+      };
+      reader.onerror = () => {
+        showToast("خطا در خواندن فایل", "error");
       };
       reader.readAsText(file);
       e.target.value = "";
@@ -75,6 +88,7 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
       pdf.save("cv-export.pdf");
     } catch (err) {
       console.error("PDF export failed:", err);
+      showToast("خطا در ساخت PDF", "error");
     } finally {
       setExporting(false);
     }
