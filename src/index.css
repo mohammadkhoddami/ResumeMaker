@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  direction: rtl;
+  font-family: "Vazirmatn", Tahoma, "Arial Unicode MS", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 12mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-family: "Vazirmatn", Tahoma, sans-serif !important;
+    text-rendering: geometricPrecision !important;
+    font-synthesis: none !important;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    -webkit-font-smoothing: subpixel-antialiased !important;
+  }
+}
