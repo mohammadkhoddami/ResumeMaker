@@ -1,0 +1,85 @@
+import React from "react";
+import { useCVStore } from "../../../store/cvStore";
+import { EditableText } from "../../ui/EditableText";
+import { IconButton } from "../../ui/IconButton";
+import { generateId } from "../../../utils/id";
+import type { SkillsSection as SkillsSectionData, SkillGroup } from "../../../types/cv.types";
+
+interface Props {
+  section: SkillsSectionData;
+  index: number;
+}
+
+export function SkillsSection({ section, index }: Props) {
+  const updateSection = useCVStore((s) => s.updateSection);
+
+  const updateGroups = (groups: SkillGroup[]) => {
+    updateSection(String(index), { groups });
+  };
+
+  const updateGroup = (groupId: string, patch: Partial<SkillGroup>) => {
+    const groups = section.groups.map((g) =>
+      g.id === groupId ? { ...g, ...patch } : g
+    );
+    updateGroups(groups);
+  };
+
+  const addGroup = () => {
+    const newGroup: SkillGroup = {
+      id: generateId(),
+      label: "",
+      items: "",
+    };
+    updateGroups([...section.groups, newGroup]);
+  };
+
+  const removeGroup = (groupId: string) => {
+    updateGroups(section.groups.filter((g) => g.id !== groupId));
+  };
+
+  return (
+    <div className="cv-item space-y-3">
+      {section.groups.map((group) => (
+        <div key={group.id} className="relative group flex items-start gap-3">
+          <div className="shrink-0 w-28">
+            <EditableText
+              value={group.label}
+              onChange={(v) => updateGroup(group.id, { label: v })}
+              placeholder="دسته‌بندی"
+              className="text-sm font-semibold text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
+              direction="rtl"
+            />
+          </div>
+          <div className="flex-1">
+            <EditableText
+              value={group.items}
+              onChange={(v) => updateGroup(group.id, { items: v })}
+              placeholder="مهارت‌ها (با کاما جدا کنید)"
+              className="text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
+              direction="rtl"
+            />
+          </div>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <IconButton
+              label="حذف گروه"
+              onClick={() => removeGroup(group.id)}
+              size="sm"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </IconButton>
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addGroup}
+        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+      >
+        + افزودن گروه مهارت
+      </button>
+    </div>
+  );
+}
