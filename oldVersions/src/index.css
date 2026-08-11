@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  direction: rtl;
+  font-family: "Vazirmatn", Tahoma, "Arial Unicode MS", sans-serif;
+  background: #e2e8f0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .app-root {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .no-print,
+  .sidebar,
+  .sidebar-toggle,
+  .preview-help,
+  .page-marker,
+  .sec-ctrl {
+    display: none !important;
+  }
+
+  .preview-area {
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+    display: block !important;
+  }
+
+  .preview-wrapper {
+    max-width: none !important;
+    width: 100% !important;
+    position: static !important;
+  }
+
+  .cv-paper {
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+  }
+
+  .sec-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
