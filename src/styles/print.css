@@ -1,0 +1,57 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-synthesis: none;
+  }
+
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  .flex.h-screen {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .pdf-export {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    min-height: auto !important;
+  }
+
+  .pdf-export * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .pdf-export .relative.z-10 > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pdf-export h1,
+  .pdf-export h2,
+  .pdf-export h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .pdf-export p,
+  .pdf-export li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  * {
+    text-rendering: geometricPrecision;
+  }
+}
