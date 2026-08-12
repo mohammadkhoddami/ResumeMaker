@@ -40,11 +40,11 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-[9999] flex flex-col gap-2" dir="rtl">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-[9999] flex flex-col gap-2" dir="rtl">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg animate-pulse-once ${
+          className={`pointer-events-auto flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg animate-toast-in ${
             toast.type === "success"
               ? "bg-green-600"
               : toast.type === "error"

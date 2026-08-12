@@ -65,11 +65,18 @@ export function EditableText({
     [multiline]
   );
 
+  const computedClassName = [
+    className,
+    !className?.includes("min-h") && "min-h-[1.5em]",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return React.createElement(tag, {
     ref,
     contentEditable: true,
     suppressContentEditableWarning: true,
-    className,
+    className: computedClassName,
     style,
     dir: direction,
     "data-ph": placeholder || undefined,

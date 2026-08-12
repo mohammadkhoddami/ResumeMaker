@@ -3,6 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
+import { THEMES } from "../../../utils/defaults";
 import type { ExperienceSection as ExperienceSectionData, ExperienceItem } from "../../../types/cv.types";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 export function ExperienceSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
+  const theme = useCVStore((s) => s.document.theme);
+  const themeConfig = THEMES[theme];
 
   const updateItems = (items: ExperienceItem[]) => {
     updateSection(section.id, { items });
@@ -61,7 +64,7 @@ export function ExperienceSection({ section }: Props) {
   };
 
   return (
-    <div className="cv-item space-y-4">
+    <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
         <div key={item.id} className="relative group border border-gray-100 rounded-lg p-4 space-y-2">
           <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -139,7 +142,7 @@ export function ExperienceSection({ section }: Props) {
             <button
               type="button"
               onClick={() => addBullet(item.id)}
-              className="text-xs text-blue-500 hover:text-blue-700 transition-colors mt-1"
+              className="cv-action-btn text-xs text-blue-500 hover:text-blue-700 transition-colors mt-1"
             >
               + افزودن مورد
             </button>
@@ -150,7 +153,7 @@ export function ExperienceSection({ section }: Props) {
       <button
         type="button"
         onClick={addItem}
-        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="cv-action-btn text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
         + افزودن سابقه کاری
       </button>

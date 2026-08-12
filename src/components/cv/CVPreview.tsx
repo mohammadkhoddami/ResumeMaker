@@ -4,6 +4,7 @@ import { useUIStore } from "../../store/uiStore";
 import { useDragDrop } from "../../hooks/useDragDrop";
 import { SectionRenderer } from "./SectionRenderer";
 import { IconButton } from "../ui/IconButton";
+import { THEMES } from "../../utils/defaults";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
@@ -15,7 +16,8 @@ export function CVPreview() {
   const moveSection = useCVStore((s) => s.moveSection);
   const exporting = useUIStore((s) => s.exporting);
 
-  const { sections, fontSize, accentColor } = document;
+  const { sections, fontSize, accentColor, theme } = document;
+  const themeConfig = THEMES[theme];
 
   const {
     dragIndex,
@@ -56,14 +58,17 @@ export function CVPreview() {
       <div
         id="cv-preview"
         ref={containerRef}
-        className={`relative bg-white shadow-xl ${exporting ? "pdf-export" : ""}`}
+        className={`relative shadow-xl ${exporting ? "pdf-export" : ""}`}
         style={
           {
             width: `${A4_WIDTH_PX}px`,
             minHeight: `${A4_HEIGHT_PX}px`,
             fontSize: `${fontSize}px`,
-            fontFamily: "'Vazirmatn', sans-serif",
+            fontFamily: themeConfig.fontFamily,
+            backgroundColor: themeConfig.colors.background,
+            color: themeConfig.colors.text,
             "--accent-color": accentColor,
+            "--item-gap": `${themeConfig.spacing.itemGap}px`,
           } as React.CSSProperties
         }
       >
@@ -71,14 +76,17 @@ export function CVPreview() {
           pageBreaks.map((y, i) => (
             <div
               key={i}
-              className="absolute left-0 right-0 pointer-events-none z-20 flex items-center"
+              className="absolute left-0 right-0 pointer-events-none z-20 flex items-center print:hidden"
               style={{ top: `${y - 3}px`, height: "6px" }}
             >
               <div className="w-full border-t-2 border-dashed border-red-400 opacity-60" />
             </div>
           ))}
 
-        <div className="relative z-10 p-10 space-y-5">
+        <div
+          className="relative z-10 p-10 flex flex-col"
+          style={{ gap: `${themeConfig.spacing.sectionGap}px` }}
+        >
           {sections.map((section, index) => {
             const isDragOver =
               dragOverIndex === index && dragIndex !== null && dragIndex !== index;
@@ -104,38 +112,41 @@ export function CVPreview() {
                   />
                 )}
 
-                {!exporting && (
-                  <div className="absolute -left-10 top-1/2 -translate-y-1/2 hidden group-hover:flex flex-col items-center gap-0.5 z-30">
-                    <IconButton
-                      label="Move up"
-                      onClick={() => moveSection(index, index - 1)}
-                      disabled={index === 0}
-                    >
-                      ↑
-                    </IconButton>
-                    <IconButton
-                      label="Move down"
-                      onClick={() => moveSection(index, index + 1)}
-                      disabled={index === sections.length - 1}
-                    >
-                      ↓
-                    </IconButton>
-                    <IconButton
-                      label="Delete section"
-                      onClick={() => removeSection(section.id)}
-                    >
-                      ×
-                    </IconButton>
-                    <div
-                      className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 text-xs leading-none py-0.5 select-none"
-                      title="Drag to reorder"
-                    >
-                      ⠿
+                <div className="flex items-start gap-1">
+                  {!exporting && (
+                    <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 print:hidden">
+                      <IconButton
+                        label="Move up"
+                        onClick={() => moveSection(index, index - 1)}
+                        disabled={index === 0}
+                      >
+                        ↑
+                      </IconButton>
+                      <IconButton
+                        label="Move down"
+                        onClick={() => moveSection(index, index + 1)}
+                        disabled={index === sections.length - 1}
+                      >
+                        ↓
+                      </IconButton>
+                      <IconButton
+                        label="Delete section"
+                        onClick={() => removeSection(section.id)}
+                      >
+                        ×
+                      </IconButton>
+                      <div
+                        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 text-xs leading-none py-0.5 select-none"
+                        title="Drag to reorder"
+                      >
+                        ⠿
+                      </div>
                     </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <SectionRenderer section={section} />
                   </div>
-                )}
-
-                <SectionRenderer section={section} />
+                </div>
               </div>
             );
           })}

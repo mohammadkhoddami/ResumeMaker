@@ -3,6 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
+import { THEMES } from "../../../utils/defaults";
 import type { CertificationsSection as CertificationsSectionData, CertificationItem } from "../../../types/cv.types";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 export function CertificationsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
+  const theme = useCVStore((s) => s.document.theme);
+  const themeConfig = THEMES[theme];
 
   const updateItems = (items: CertificationItem[]) => {
     updateSection(section.id, { items });
@@ -38,7 +41,7 @@ export function CertificationsSection({ section }: Props) {
   };
 
   return (
-    <div className="cv-item space-y-3">
+    <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
         <div key={item.id} className="relative group flex items-start gap-3 border border-gray-100 rounded-lg p-3">
           <div className="flex-1 space-y-1">
@@ -83,7 +86,7 @@ export function CertificationsSection({ section }: Props) {
       <button
         type="button"
         onClick={addItem}
-        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="cv-action-btn text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
         + افزودن گواهینامه
       </button>

@@ -1,20 +1,19 @@
 import React from "react";
 import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
+import { THEMES } from "../../../utils/defaults";
 import type { HeaderSection as HeaderSectionData } from "../../../types/cv.types";
 
 interface Props {
   section: HeaderSectionData;
 }
 
-const DARK_THEMES = new Set(["classic", "minimal", "executive"]);
-
 export function HeaderSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
   const theme = useCVStore((s) => s.document.theme);
   const accentColor = useCVStore((s) => s.document.accentColor);
 
-  const isDark = DARK_THEMES.has(theme);
+  const themeConfig = THEMES[theme];
 
   const updateField = (field: keyof HeaderSectionData["data"], value: string) => {
     updateSection(section.id, {
@@ -22,19 +21,22 @@ export function HeaderSection({ section }: Props) {
     });
   };
 
-  const textClass = isDark ? "text-white" : "text-gray-900";
-  const subtextClass = isDark ? "text-gray-200" : "text-gray-600";
-  const bgClass = isDark ? "bg-gray-900" : "bg-white";
-
   return (
-    <div className={`cv-item rounded-lg p-6 ${bgClass}`} style={{ borderTop: `4px solid ${accentColor}` }}>
+    <div
+      className="cv-item rounded-lg p-6"
+      style={{
+        backgroundColor: themeConfig.colors.background,
+        borderTop: `4px solid ${accentColor}`,
+      }}
+    >
       <div className="space-y-2">
         <EditableText
           tag="h1"
           value={section.data.name}
           onChange={(v) => updateField("name", v)}
           placeholder="نام و نام خانوادگی"
-          className={`text-3xl font-bold ${textClass} block outline-none focus:ring-2 focus:ring-blue-300 rounded px-1`}
+          className="font-bold block outline-none focus:ring-2 focus:ring-blue-300 rounded px-1"
+          style={{ color: themeConfig.colors.text, fontFamily: themeConfig.headingFont, fontSize: "2rem", lineHeight: 1.2 }}
           direction="rtl"
         />
         <EditableText
@@ -42,11 +44,15 @@ export function HeaderSection({ section }: Props) {
           value={section.data.title}
           onChange={(v) => updateField("title", v)}
           placeholder="عنوان شغلی"
-          className={`text-lg font-medium ${subtextClass} block outline-none focus:ring-2 focus:ring-blue-300 rounded px-1`}
+          className="font-medium block outline-none focus:ring-2 focus:ring-blue-300 rounded px-1"
+          style={{ color: themeConfig.colors.primary, fontFamily: themeConfig.headingFont, fontSize: "1.25rem", lineHeight: 1.3 }}
           direction="rtl"
         />
 
-        <div className={`flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm ${subtextClass}`}>
+        <div
+          className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm"
+          style={{ color: themeConfig.colors.secondary }}
+        >
           <EditableText
             value={section.data.email}
             onChange={(v) => updateField("email", v)}

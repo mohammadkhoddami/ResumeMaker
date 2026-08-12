@@ -1,5 +1,6 @@
 import React from "react";
-import { SECTION_LABELS } from "../../utils/defaults";
+import { SECTION_LABELS, THEMES } from "../../utils/defaults";
+import { useCVStore } from "../../store/cvStore";
 
 import type { CVSection, SectionType } from "../../types/cv.types";
 
@@ -31,6 +32,8 @@ const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any
 
 export function SectionRenderer({ section }: SectionRendererProps) {
   const Component = SECTION_COMPONENTS[section.type];
+  const theme = useCVStore((s) => s.document.theme);
+  const themeConfig = THEMES[theme];
 
   if (!Component) return null;
 
@@ -39,9 +42,20 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   }
 
   return (
-    <div className="cv-item space-y-3">
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-        <h3 className="text-base font-bold text-gray-800">
+    <div className="cv-item" style={{ marginBottom: themeConfig.spacing.sectionGap }}>
+      <div
+        className="flex items-center gap-2 border-b border-gray-200 pb-2"
+        style={{ marginBottom: themeConfig.spacing.itemGap }}
+      >
+        <h3
+          className="font-bold"
+          style={{
+            fontFamily: themeConfig.headingFont,
+            color: themeConfig.colors.primary,
+            fontSize: "1rem",
+            lineHeight: 1.4,
+          }}
+        >
           {SECTION_LABELS[section.type]}
         </h3>
       </div>

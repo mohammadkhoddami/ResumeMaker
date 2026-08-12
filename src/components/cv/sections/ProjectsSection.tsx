@@ -3,6 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
+import { THEMES } from "../../../utils/defaults";
 import type { ProjectsSection as ProjectsSectionData, ProjectItem } from "../../../types/cv.types";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 export function ProjectsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
+  const theme = useCVStore((s) => s.document.theme);
+  const themeConfig = THEMES[theme];
 
   const updateItems = (items: ProjectItem[]) => {
     updateSection(section.id, { items });
@@ -39,7 +42,7 @@ export function ProjectsSection({ section }: Props) {
   };
 
   return (
-    <div className="cv-item space-y-4">
+    <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
         <div key={item.id} className="relative group border border-gray-100 rounded-lg p-4 space-y-2">
           <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -93,7 +96,7 @@ export function ProjectsSection({ section }: Props) {
       <button
         type="button"
         onClick={addItem}
-        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="cv-action-btn text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
         + افزودن پروژه
       </button>

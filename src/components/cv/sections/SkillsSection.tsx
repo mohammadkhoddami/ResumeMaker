@@ -3,6 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
+import { THEMES } from "../../../utils/defaults";
 import type { SkillsSection as SkillsSectionData, SkillGroup } from "../../../types/cv.types";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 export function SkillsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
+  const theme = useCVStore((s) => s.document.theme);
+  const themeConfig = THEMES[theme];
 
   const updateGroups = (groups: SkillGroup[]) => {
     updateSection(section.id, { groups });
@@ -37,7 +40,7 @@ export function SkillsSection({ section }: Props) {
   };
 
   return (
-    <div className="cv-item space-y-3">
+    <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.groups.map((group) => (
         <div key={group.id} className="relative group flex items-start gap-3">
           <div className="shrink-0 w-28">
@@ -75,7 +78,7 @@ export function SkillsSection({ section }: Props) {
       <button
         type="button"
         onClick={addGroup}
-        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="cv-action-btn text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
         + افزودن گروه مهارت
       </button>

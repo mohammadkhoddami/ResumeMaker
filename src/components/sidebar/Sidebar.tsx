@@ -17,7 +17,7 @@ export function Sidebar({ user }: SidebarProps) {
   const { saveToCloud } = useCloudSync(user);
 
   return (
-    <div className="relative flex h-full shrink-0">
+    <div className="relative flex h-full shrink-0 print:hidden">
       <aside
         className={`flex h-full flex-col bg-gray-900 text-gray-100 transition-all duration-300 ${
           sidebarOpen ? "w-64" : "w-0"

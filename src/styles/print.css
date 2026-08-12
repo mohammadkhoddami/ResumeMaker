@@ -11,7 +11,8 @@
   }
 
   aside,
-  .no-print {
+  .no-print,
+  .cv-action-btn {
     display: none !important;
   }
 
@@ -54,4 +55,8 @@
   * {
     text-rendering: geometricPrecision;
   }
+}
+
+.pdf-export .cv-action-btn {
+  display: none !important;
 }
