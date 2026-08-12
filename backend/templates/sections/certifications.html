@@ -1,0 +1,16 @@
+<section class="cv-section">
+  <h2 class="section-title">گواهینامه‌ها</h2>
+  {% for item in section.items %}
+  <div class="cv-item">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <h3 style="font-family: {{ theme_config.heading_font }}; font-size: 1em; font-weight: 700; color: {{ theme_config.colors.text }};">{{ item.name }}</h3>
+      {% if item.date %}
+      <span style="font-size: 0.85em; color: {{ theme_config.colors.secondary }};">{{ item.date }}</span>
+      {% endif %}
+    </div>
+    {% if item.issuer %}
+    <p style="font-size: 0.9em; color: {{ theme_config.colors.secondary }}; margin-top: 2px;">{{ item.issuer }}</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>

@@ -1,0 +1,65 @@
+<section class="cv-section" style="margin-bottom: {{ theme_config.spacing.section_gap }}px;">
+  {% if theme_config.header_layout == "banner" %}
+  <div style="background: {% if theme_config.header_background %}{{ theme_config.header_background }}{% else %}{{ accent_color }}{% endif %}; color: #ffffff; padding: 24px 28px; border-radius: 8px;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; margin-bottom: 4px;">{{ section.data.name }}</h1>
+    {% if section.data.title %}
+    <p style="font-size: 1.1em; opacity: 0.9; margin-bottom: 8px;">{{ section.data.title }}</p>
+    {% endif %}
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85em; opacity: 0.85;">
+      {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+      {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+      {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+      {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+      {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+    </div>
+  </div>
+
+  {% elif theme_config.header_layout == "centered" %}
+  <div style="text-align: center; padding: 20px 0;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 4px;">{{ section.data.name }}</h1>
+    {% if section.data.title %}
+    <p style="font-size: 1.1em; color: {{ theme_config.colors.secondary }}; margin-bottom: 10px;">{{ section.data.title }}</p>
+    {% endif %}
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; font-size: 0.85em; color: {{ theme_config.colors.secondary }};">
+      {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+      {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+      {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+      {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+      {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+    </div>
+  </div>
+
+  {% elif theme_config.header_layout == "sidebar-accent" %}
+  <div style="display: flex; gap: 20px; align-items: flex-start;">
+    <div style="width: 4px; min-height: 60px; background: {{ accent_color }}; border-radius: 2px;"></div>
+    <div>
+      <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 4px;">{{ section.data.name }}</h1>
+      {% if section.data.title %}
+      <p style="font-size: 1.1em; color: {{ theme_config.colors.secondary }}; margin-bottom: 8px;">{{ section.data.title }}</p>
+      {% endif %}
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85em; color: {{ theme_config.colors.secondary }};">
+        {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+        {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+        {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+        {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+        {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% elif theme_config.header_layout == "compact" %}
+  <div style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.5em; font-weight: 700; color: {{ theme_config.colors.text }}; display: inline;">{{ section.data.name }}</h1>
+    {% if section.data.title %}
+    <span style="font-size: 1em; color: {{ theme_config.colors.secondary }}; margin-right: 12px;">{{ section.data.title }}</span>
+    {% endif %}
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.8em; color: {{ theme_config.colors.secondary }}; margin-top: 6px;">
+      {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+      {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+      {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+      {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+      {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</section>

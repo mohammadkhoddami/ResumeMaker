@@ -1,0 +1,23 @@
+<section class="cv-section">
+  <h2 class="section-title">پروژه‌ها</h2>
+  {% for item in section.items %}
+  <div class="cv-item">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <h3 style="font-family: {{ theme_config.heading_font }}; font-size: 1em; font-weight: 700; color: {{ theme_config.colors.text }};">{{ item.name }}</h3>
+      {% if item.link %}
+      <span style="font-size: 0.8em; color: {{ accent_color }};">{{ item.link }}</span>
+      {% endif %}
+    </div>
+    {% if item.description %}
+    <p style="font-size: 0.9em; color: {{ theme_config.colors.text }}; margin-top: 4px; line-height: 1.5;">{{ item.description }}</p>
+    {% endif %}
+    {% if item.tech %}
+    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+      {% for t in item.tech %}
+      <span style="font-size: 0.75em; background: #f1f5f9; color: {{ theme_config.colors.secondary }}; padding: 2px 8px; border-radius: 4px;">{{ t }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
