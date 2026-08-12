@@ -142,12 +142,14 @@ async def generate_pdf(document: CVDocument) -> bytes:
     browser = _get_browser()
 
     try:
-        page = await browser.new_page(
+        context = await browser.new_context(
+            base_url=f"http://localhost:{settings.PORT}/",
             viewport={
                 "width": _VIEWPORT_WIDTH,
                 "height": _VIEWPORT_HEIGHT,
             },
         )
+        page = await context.new_page()
     except Exception as exc:
         raise PDFGenerationError(
             f"Failed to open a new browser page: {exc}"
@@ -156,7 +158,6 @@ async def generate_pdf(document: CVDocument) -> bytes:
     try:
         await page.set_content(
             html,
-            base_url=f"http://localhost:{settings.PORT}/",
             wait_until="load",
             timeout=_PAGE_TIMEOUT_MS,
         )
@@ -187,5 +188,6 @@ async def generate_pdf(document: CVDocument) -> bytes:
         ) from exc
     finally:
         await page.close()
+        await context.close()
 
     return pdf_bytes
