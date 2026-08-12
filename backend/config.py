@@ -1,5 +1,9 @@
+import logging
 from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -15,3 +19,27 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+REQUIRED_FONTS = [
+    "Vazirmatn-Regular.woff2",
+    "Vazirmatn-Bold.woff2",
+]
+
+
+def validate_fonts() -> None:
+    """Ensure required font files exist in FONTS_DIR.
+
+    Logs a warning for every missing file and raises SystemExit(1)
+    so that Docker builds fail fast instead of silently falling back
+    to system fonts at render time.
+    """
+    missing = [
+        name for name in REQUIRED_FONTS
+        if not (settings.FONTS_DIR / name).is_file()
+    ]
+    if missing:
+        for name in missing:
+            logger.warning(
+                "Required font file missing: %s", settings.FONTS_DIR / name
+            )
+        raise SystemExit(1)

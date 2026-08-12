@@ -47,6 +47,9 @@ RUN playwright install-deps chromium
 # Copy application source
 COPY . .
 
+# Fail the build immediately if required font files are absent
+RUN python -c "from config import validate_fonts; validate_fonts()"
+
 EXPOSE 8000
 
 ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
