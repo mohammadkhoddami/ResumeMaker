@@ -1,3 +1,6 @@
+import asyncio
+import logging
+import sys
 from contextlib import asynccontextmanager
 from io import BytesIO
 
@@ -17,19 +20,31 @@ from services.pdf_generator import (
     init_browser,
 )
 
+logger = logging.getLogger(__name__)
+
 
 # ---------------------------------------------------------------------------
 # Lifespan – manage Playwright browser lifecycle
 # ---------------------------------------------------------------------------
 
 
+def _suppress_connection_reset(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    """Ignore harmless ConnectionResetError from Windows ProactorEventLoop pipes."""
+    exception = context.get("exception")
+    if isinstance(exception, (ConnectionResetError, ConnectionAbortedError)):
+        return
+    loop.default_exception_handler(context)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if sys.platform == "win32":
+        asyncio.get_event_loop().set_exception_handler(_suppress_connection_reset)
+
     try:
         await init_browser()
     except Exception as exc:
-        import logging
-        logging.getLogger(__name__).error("Failed to initialise browser: %s", exc)
+        logger.error("Failed to initialise browser: %s", exc)
     yield
     await close_browser()
 
@@ -43,6 +58,7 @@ app = FastAPI(title="CV Export Backend", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,7 +70,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 settings.FONTS_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(settings.FONTS_DIR)), name="static")
+app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 
 # ---------------------------------------------------------------------------
