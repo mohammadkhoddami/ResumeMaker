@@ -156,10 +156,11 @@ async def generate_pdf(document: CVDocument) -> bytes:
         ) from exc
 
     try:
+        page.set_default_timeout(_PAGE_TIMEOUT_MS)
+
         await page.set_content(
             html,
             wait_until="load",
-            timeout=_PAGE_TIMEOUT_MS,
         )
 
         # Wait for all web-fonts to finish loading before capturing
@@ -175,7 +176,6 @@ async def generate_pdf(document: CVDocument) -> bytes:
                 "bottom": "0",
                 "left": "0",
             },
-            timeout=_PAGE_TIMEOUT_MS,
         )
     except PlaywrightTimeoutError as exc:
         raise PDFGenerationError(

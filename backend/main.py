@@ -25,7 +25,11 @@ from services.pdf_generator import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_browser()
+    try:
+        await init_browser()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error("Failed to initialise browser: %s", exc)
     yield
     await close_browser()
 
@@ -42,6 +46,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ---------------------------------------------------------------------------
@@ -103,6 +108,11 @@ async def export_pdf(document: CVDocument):
         return JSONResponse(
             status_code=500,
             content={"detail": str(exc)},
+        )
+    except Exception as exc:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Unexpected error during PDF generation: {exc}"},
         )
 
     return StreamingResponse(
