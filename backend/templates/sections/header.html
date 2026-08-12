@@ -1,11 +1,13 @@
 <section class="cv-section" style="margin-bottom: {{ theme_config.spacing.section_gap }}px;">
+  {% set header_bg = theme_config.header_background if theme_config.header_background else accent_color | hex_to_rgba(0.1) %}
+
   {% if theme_config.header_layout == "banner" %}
-  <div style="background: {% if theme_config.header_background %}{{ theme_config.header_background }}{% else %}{{ accent_color }}{% endif %}; color: #ffffff; padding: 24px 28px; border-radius: 8px;">
-    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; margin-bottom: 4px;">{{ section.data.name }}</h1>
+  <div style="background: {{ header_bg }}; border-top: 6px solid {{ accent_color }}; border-radius: 8px; padding: 24px;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 2rem; font-weight: 700; color: {{ accent_color }}; line-height: 1.2; margin-bottom: 4px;">{{ section.data.name }}</h1>
     {% if section.data.title %}
-    <p style="font-size: 1.1em; opacity: 0.9; margin-bottom: 8px;">{{ section.data.title }}</p>
+    <h2 style="font-family: {{ theme_config.heading_font }}; font-size: 1.25rem; font-weight: 500; color: {{ theme_config.colors.primary }}; line-height: 1.3; margin-bottom: 8px;">{{ section.data.title }}</h2>
     {% endif %}
-    <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85em; opacity: 0.85;">
+    <div style="display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 0.875rem; color: {{ theme_config.colors.secondary }}; padding-top: 8px;">
       {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
       {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
       {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
@@ -15,12 +17,12 @@
   </div>
 
   {% elif theme_config.header_layout == "centered" %}
-  <div style="text-align: center; padding: 20px 0;">
-    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 4px;">{{ section.data.name }}</h1>
+  <div style="background: {{ header_bg }}; border-radius: 8px; padding: 24px; text-align: center;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 2rem; font-weight: 700; color: {{ accent_color }}; line-height: 1.2; margin-bottom: 4px;">{{ section.data.name }}</h1>
     {% if section.data.title %}
-    <p style="font-size: 1.1em; color: {{ theme_config.colors.secondary }}; margin-bottom: 10px;">{{ section.data.title }}</p>
+    <h2 style="font-family: {{ theme_config.heading_font }}; font-size: 1.25rem; font-weight: 500; color: {{ theme_config.colors.primary }}; line-height: 1.3; margin-bottom: 8px;">{{ section.data.title }}</h2>
     {% endif %}
-    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; font-size: 0.85em; color: {{ theme_config.colors.secondary }};">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.875rem; color: {{ theme_config.colors.secondary }}; padding-top: 8px;">
       {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
       {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
       {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
@@ -30,30 +32,29 @@
   </div>
 
   {% elif theme_config.header_layout == "sidebar-accent" %}
-  <div style="display: flex; gap: 20px; align-items: flex-start;">
-    <div style="width: 4px; min-height: 60px; background: {{ accent_color }}; border-radius: 2px;"></div>
-    <div>
-      <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.8em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 4px;">{{ section.data.name }}</h1>
-      {% if section.data.title %}
-      <p style="font-size: 1.1em; color: {{ theme_config.colors.secondary }}; margin-bottom: 8px;">{{ section.data.title }}</p>
-      {% endif %}
-      <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85em; color: {{ theme_config.colors.secondary }};">
-        {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
-        {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
-        {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
-        {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
-        {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
-      </div>
+  <div style="background: {{ header_bg }}; border-right: 6px solid {{ accent_color }}; border-radius: 8px; padding: 24px;">
+    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 2rem; font-weight: 700; color: {{ accent_color }}; line-height: 1.2; margin-bottom: 4px;">{{ section.data.name }}</h1>
+    {% if section.data.title %}
+    <h2 style="font-family: {{ theme_config.heading_font }}; font-size: 1.25rem; font-weight: 500; color: {{ theme_config.colors.primary }}; line-height: 1.3; margin-bottom: 8px;">{{ section.data.title }}</h2>
+    {% endif %}
+    <div style="display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 0.875rem; color: {{ theme_config.colors.secondary }}; padding-top: 8px;">
+      {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+      {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+      {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+      {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+      {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
     </div>
   </div>
 
   {% elif theme_config.header_layout == "compact" %}
-  <div style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-    <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.5em; font-weight: 700; color: {{ theme_config.colors.text }}; display: inline;">{{ section.data.name }}</h1>
-    {% if section.data.title %}
-    <span style="font-size: 1em; color: {{ theme_config.colors.secondary }}; margin-right: 12px;">{{ section.data.title }}</span>
-    {% endif %}
-    <div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.8em; color: {{ theme_config.colors.secondary }}; margin-top: 6px;">
+  <div style="background: {{ header_bg }}; border-top: 4px solid {{ accent_color }}; border-radius: 8px; padding: 12px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 12px; row-gap: 4px;">
+      <h1 style="font-family: {{ theme_config.heading_font }}; font-size: 1.5rem; font-weight: 700; color: {{ accent_color }}; line-height: 1.2;">{{ section.data.name }}</h1>
+      {% if section.data.title %}
+      <h2 style="font-family: {{ theme_config.heading_font }}; font-size: 1rem; font-weight: 500; color: {{ theme_config.colors.primary }}; line-height: 1.3;">{{ section.data.title }}</h2>
+      {% endif %}
+    </div>
+    <div style="display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 0.875rem; color: {{ theme_config.colors.secondary }}; padding-top: 8px;">
       {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
       {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
       {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}

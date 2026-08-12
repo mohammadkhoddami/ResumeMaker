@@ -135,7 +135,7 @@
   <div id="cv-preview" style="width: 210mm; min-height: 297mm; margin: 0 auto; background: {{ theme_config.colors.background }}; padding: 20mm 18mm;">
     {% for section in document.sections %}
       {% if section.type == "header" %}
-        {{ theme.render_header(section, theme_config, accent_color) }}
+        {% include "sections/header.html" %}
       {% elif section.type == "summary" %}
         {% include "sections/summary.html" %}
       {% elif section.type == "experience" %}
