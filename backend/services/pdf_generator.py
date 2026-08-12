@@ -141,6 +141,10 @@ def render_html(document: CVDocument) -> str:
         raise TemplateRenderError(
             f"Referenced template not found during render: {exc}"
         ) from exc
+    except Exception as exc:
+        raise TemplateRenderError(
+            f"Template rendering failed: {exc}"
+        ) from exc
 
     return html
 
@@ -164,11 +168,11 @@ async def generate_pdf(
 
     try:
         context = await browser.new_context(
-            base_url=f"http://localhost:{settings.PORT}/",
             viewport={
                 "width": _VIEWPORT_WIDTH,
                 "height": _VIEWPORT_HEIGHT,
             },
+            base_url=f"http://localhost:{settings.PORT}/",
         )
         page = await context.new_page()
     except Exception as exc:
@@ -200,12 +204,13 @@ async def generate_pdf(
             }"""
         )
         if failed_fonts:
-            raise PDFGenerationError(
-                "Font loading failed for: " + ", ".join(sorted(set(failed_fonts)))
+            logger.warning(
+                "Font loading failed for: %s. "
+                "Falling back to system fonts.",
+                ", ".join(sorted(set(failed_fonts))),
             )
 
-        # Activate @media print rules before layout
-        await page.emulate_media("print")
+
 
         if debug_screenshot:
             screenshot_bytes = await page.screenshot(full_page=True)

@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from config import settings
+from config import check_fonts, settings
 from models.cv_document import CVDocument
 from services.pdf_generator import (
     PDFGenerationError,
@@ -19,6 +19,10 @@ from services.pdf_generator import (
     generate_pdf,
     init_browser,
 )
+
+from logging_config import setup_logging
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +44,8 @@ def _suppress_connection_reset(loop: asyncio.AbstractEventLoop, context: dict) -
 async def lifespan(app: FastAPI):
     if sys.platform == "win32":
         asyncio.get_event_loop().set_exception_handler(_suppress_connection_reset)
+
+    check_fonts()
 
     try:
         await init_browser()
@@ -135,7 +141,6 @@ async def export_pdf(document: CVDocument):
         BytesIO(pdf_bytes),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": 'attachment; filename="cv-export.pdf"',
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
             "Pragma": "no-cache",
         },

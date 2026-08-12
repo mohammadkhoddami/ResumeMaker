@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     FONTS_DIR: Path = Path(__file__).resolve().parent / "static" / "fonts"
     TEMPLATES_DIR: Path = Path(__file__).resolve().parent / "templates"
     PLAYWRIGHT_BROWSER: str = "chromium"
+    LOG_LEVEL: str = "INFO"
+    LOG_DIR: Path = Path(__file__).resolve().parent / "logs"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
@@ -43,3 +45,21 @@ def validate_fonts() -> None:
                 "Required font file missing: %s", settings.FONTS_DIR / name
             )
         raise SystemExit(1)
+
+
+def check_fonts() -> None:
+    """Non-fatal font check for runtime startup.
+
+    Logs a warning for every missing font but does NOT exit,
+    allowing the server to start with system-font fallback.
+    """
+    missing = [
+        name for name in REQUIRED_FONTS
+        if not (settings.FONTS_DIR / name).is_file()
+    ]
+    if missing:
+        for name in missing:
+            logger.warning(
+                "Font file missing (will fall back to system fonts): %s",
+                settings.FONTS_DIR / name,
+            )
