@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
@@ -79,6 +80,23 @@ def _get_browser() -> Browser:
 _jinja_env: Optional[Environment] = None
 
 
+def _hex_to_rgba(hex_color: str, alpha: float = 1.0) -> str:
+    """Convert a hex color string to a CSS rgba() string.
+
+    Supports 3-digit (#abc) and 6-digit (#aabbcc) hex, with or
+    without a leading '#'.
+    """
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) == 3:
+        hex_color = "".join(c * 2 for c in hex_color)
+    if len(hex_color) != 6 or not re.fullmatch(r"[0-9a-fA-F]{6}", hex_color):
+        raise ValueError(f"Invalid hex color: {hex_color!r}")
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
+
+
 def _get_jinja_env() -> Environment:
     global _jinja_env
     if _jinja_env is None:
@@ -86,6 +104,7 @@ def _get_jinja_env() -> Environment:
             loader=FileSystemLoader(str(settings.TEMPLATES_DIR)),
             autoescape=False,
         )
+        _jinja_env.filters["hex_to_rgba"] = _hex_to_rgba
     return _jinja_env
 
 
@@ -136,7 +155,9 @@ _VIEWPORT_HEIGHT = 1123
 _PAGE_TIMEOUT_MS = 30_000
 
 
-async def generate_pdf(document: CVDocument) -> bytes:
+async def generate_pdf(
+    document: CVDocument, *, debug_screenshot: bool = False
+) -> bytes:
     """Generate a PDF from a validated CVDocument and return raw bytes."""
     html = render_html(document)
     browser = _get_browser()
@@ -165,6 +186,32 @@ async def generate_pdf(document: CVDocument) -> bytes:
 
         # Wait for all web-fonts to finish loading before capturing
         await page.evaluate("document.fonts.ready")
+
+        # Detect silent font-load failures (404s, network errors)
+        failed_fonts: list[str] = await page.evaluate(
+            """() => {
+                const failed = [];
+                for (const font of document.fonts) {
+                    if (font.status === 'error' || font.status === 'unloaded') {
+                        failed.push(font.family);
+                    }
+                }
+                return failed;
+            }"""
+        )
+        if failed_fonts:
+            raise PDFGenerationError(
+                "Font loading failed for: " + ", ".join(sorted(set(failed_fonts)))
+            )
+
+        # Activate @media print rules before layout
+        await page.emulate_media("print")
+
+        if debug_screenshot:
+            screenshot_bytes = await page.screenshot(full_page=True)
+            logger.info(
+                "Debug screenshot captured (%d bytes)", len(screenshot_bytes)
+            )
 
         pdf_bytes = await page.pdf(
             format="A4",
