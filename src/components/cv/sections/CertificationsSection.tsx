@@ -3,7 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
-import { THEMES } from "../../../utils/defaults";
+import { THEMES, getItemCardClasses } from "../../../utils/defaults";
 import type { CertificationsSection as CertificationsSectionData, CertificationItem } from "../../../types/cv.types";
 
 interface Props {
@@ -43,7 +43,7 @@ export function CertificationsSection({ section }: Props) {
   return (
     <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
-        <div key={item.id} className="relative group flex items-start gap-3 border border-gray-100 rounded-lg p-3">
+        <div key={item.id} className={`relative group flex items-start gap-3 ${getItemCardClasses(themeConfig.itemCardStyle, "p-3")}`}>
           <div className="flex-1 space-y-1">
             <EditableText
               value={item.name}

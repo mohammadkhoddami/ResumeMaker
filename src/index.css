@@ -34,6 +34,27 @@ body {
   background-color: rgba(59, 130, 246, 0.04);
 }
 
+.section-title-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.section-title-uppercase {
+  letter-spacing: 0.06em;
+}
+
+.section-title-uppercase {
+  letter-spacing: 0.06em;
+}
+
+.section-title-uppercase {
+  letter-spacing: 0.06em;
+}
+
+.section-title-uppercase {
+  letter-spacing: 0.06em;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

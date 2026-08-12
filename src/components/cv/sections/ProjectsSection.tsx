@@ -3,7 +3,7 @@ import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
-import { THEMES } from "../../../utils/defaults";
+import { THEMES, getItemCardClasses } from "../../../utils/defaults";
 import type { ProjectsSection as ProjectsSectionData, ProjectItem } from "../../../types/cv.types";
 
 interface Props {
@@ -44,7 +44,7 @@ export function ProjectsSection({ section }: Props) {
   return (
     <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
-        <div key={item.id} className="relative group border border-gray-100 rounded-lg p-4 space-y-2">
+        <div key={item.id} className={`relative group space-y-2 ${getItemCardClasses(themeConfig.itemCardStyle)}`}>
           <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <IconButton
               label="حذف پروژه"

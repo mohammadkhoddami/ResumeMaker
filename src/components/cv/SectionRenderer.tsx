@@ -33,6 +33,7 @@ const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any
 export function SectionRenderer({ section }: SectionRendererProps) {
   const Component = SECTION_COMPONENTS[section.type];
   const theme = useCVStore((s) => s.document.theme);
+  const accentColor = useCVStore((s) => s.document.accentColor);
   const themeConfig = THEMES[theme];
 
   if (!Component) return null;
@@ -41,24 +42,89 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     return <Component section={section} />;
   }
 
+  const titleStyle = themeConfig.sectionTitleStyle;
+
+  const renderTitle = () => {
+    switch (titleStyle) {
+      case "boxed":
+        return (
+          <div className="flex items-center" style={{ marginBottom: themeConfig.spacing.itemGap }}>
+            <span
+              className="inline-block rounded-full px-3 py-1 font-bold"
+              style={{
+                fontFamily: themeConfig.headingFont,
+                color: themeConfig.colors.primary,
+                backgroundColor: `${themeConfig.colors.primary}14`,
+                fontSize: "1rem",
+                lineHeight: 1.4,
+              }}
+            >
+              {SECTION_LABELS[section.type]}
+            </span>
+          </div>
+        );
+      case "side-bar":
+        return (
+          <div className="flex items-center gap-2" style={{ marginBottom: themeConfig.spacing.itemGap }}>
+            <div
+              className="w-1 self-stretch rounded-full shrink-0"
+              style={{ backgroundColor: accentColor }}
+            />
+            <h3
+              className="font-bold"
+              style={{
+                fontFamily: themeConfig.headingFont,
+                color: themeConfig.colors.primary,
+                fontSize: "1rem",
+                lineHeight: 1.4,
+              }}
+            >
+              {SECTION_LABELS[section.type]}
+            </h3>
+          </div>
+        );
+      case "uppercase-plain":
+        return (
+          <div className="flex items-center" style={{ marginBottom: themeConfig.spacing.itemGap }}>
+            <h3
+              className="font-bold uppercase section-title-uppercase"
+              style={{
+                fontFamily: themeConfig.headingFont,
+                color: themeConfig.colors.primary,
+                fontSize: "1rem",
+                lineHeight: 1.4,
+              }}
+            >
+              {SECTION_LABELS[section.type]}
+            </h3>
+          </div>
+        );
+      case "underlined":
+      default:
+        return (
+          <div
+            className="flex items-center gap-2 border-b border-gray-200 pb-2"
+            style={{ marginBottom: themeConfig.spacing.itemGap }}
+          >
+            <h3
+              className="font-bold"
+              style={{
+                fontFamily: themeConfig.headingFont,
+                color: themeConfig.colors.primary,
+                fontSize: "1rem",
+                lineHeight: 1.4,
+              }}
+            >
+              {SECTION_LABELS[section.type]}
+            </h3>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="cv-item" style={{ marginBottom: themeConfig.spacing.sectionGap }}>
-      <div
-        className="flex items-center gap-2 border-b border-gray-200 pb-2"
-        style={{ marginBottom: themeConfig.spacing.itemGap }}
-      >
-        <h3
-          className="font-bold"
-          style={{
-            fontFamily: themeConfig.headingFont,
-            color: themeConfig.colors.primary,
-            fontSize: "1rem",
-            lineHeight: 1.4,
-          }}
-        >
-          {SECTION_LABELS[section.type]}
-        </h3>
-      </div>
+      {renderTitle()}
       <Component section={section} />
     </div>
   );

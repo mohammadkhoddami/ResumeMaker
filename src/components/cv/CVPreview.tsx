@@ -8,7 +8,6 @@ import { THEMES } from "../../utils/defaults";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
-const CONTENT_TOP_PADDING = 40; // p-10 on the inner content wrapper
 
 export function CVPreview() {
   const document = useCVStore((s) => s.document);
@@ -30,26 +29,38 @@ export function CVPreview() {
   } = useDragDrop();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
+  const [paddingTop, setPaddingTop] = useState(0);
+  const [paddingBottom, setPaddingBottom] = useState(0);
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    const contentEl = contentRef.current;
+    if (!el || !contentEl) return;
 
-    const observer = new ResizeObserver(() => {
+    const measure = () => {
+      const style = getComputedStyle(contentEl);
+      const pt = parseFloat(style.paddingTop) || 0;
+      const pb = parseFloat(style.paddingBottom) || 0;
+      setPaddingTop(pt);
+      setPaddingBottom(pb);
       setContentHeight(el.scrollHeight);
-    });
+    };
+
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
-    setContentHeight(el.scrollHeight);
+    measure();
 
     return () => observer.disconnect();
   }, []);
 
-  const effectiveHeight = contentHeight - CONTENT_TOP_PADDING;
+  const effectiveContentHeight = contentHeight - paddingTop - paddingBottom;
+  const pageContentHeight = A4_HEIGHT_PX - paddingTop - paddingBottom;
   const pageBreaks: number[] = [];
-  if (effectiveHeight > A4_HEIGHT_PX) {
-    for (let y = A4_HEIGHT_PX; y < effectiveHeight; y += A4_HEIGHT_PX) {
-      pageBreaks.push(y);
+  if (effectiveContentHeight > pageContentHeight) {
+    for (let y = pageContentHeight; y < effectiveContentHeight; y += pageContentHeight) {
+      pageBreaks.push(paddingTop + y);
     }
   }
 
@@ -77,13 +88,17 @@ export function CVPreview() {
             <div
               key={i}
               className="absolute left-0 right-0 pointer-events-none z-20 flex items-center print:hidden"
-              style={{ top: `${y - 3}px`, height: "6px" }}
+              style={{ top: `${y}px`, height: "0px" }}
             >
-              <div className="w-full border-t-2 border-dashed border-red-400 opacity-60" />
+              <span className="absolute left-1 -top-4 text-[10px] font-medium text-red-500/80 select-none">
+                Page {i + 2}
+              </span>
+              <div className="w-full border-t-[3px] border-dashed border-red-500/80" />
             </div>
           ))}
 
         <div
+          ref={contentRef}
           className="relative z-10 p-10 flex flex-col"
           style={{ gap: `${themeConfig.spacing.sectionGap}px` }}
         >

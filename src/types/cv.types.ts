@@ -130,6 +130,10 @@ export type CVSection =
 
 export type ThemeId = "modern" | "classic" | "minimal" | "executive";
 
+export type HeaderLayout = "banner" | "centered" | "sidebar-accent" | "compact";
+export type SectionTitleStyle = "underlined" | "boxed" | "side-bar" | "uppercase-plain";
+export type ItemCardStyle = "bordered" | "flat" | "dotted-separator" | "shadowed";
+
 export interface ThemeConfig {
   id: ThemeId;
   name: string;
@@ -145,6 +149,10 @@ export interface ThemeConfig {
     background: string;
     text: string;
   };
+  headerBackground?: string | null;
+  headerLayout: HeaderLayout;
+  sectionTitleStyle: SectionTitleStyle;
+  itemCardStyle: ItemCardStyle;
 }
 
 export interface CVDocument {

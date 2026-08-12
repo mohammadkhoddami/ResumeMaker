@@ -5,7 +5,7 @@ const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
-const CANVAS_SCALE = 2;
+const CANVAS_SCALE = 1.5;
 
 /**
  * Exports the CV element as a paginated image-based PDF.
@@ -65,6 +65,22 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
       windowHeight: totalHeight,
     });
 
+    // Convert to JPEG to reduce memory footprint before slicing
+    const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+    const jpegImg = new Image();
+    await new Promise<void>((resolve, reject) => {
+      jpegImg.onload = () => resolve();
+      jpegImg.onerror = () => reject(new Error("Failed to load JPEG"));
+      jpegImg.src = jpegDataUrl;
+    });
+
+    const jpegCanvas = document.createElement("canvas");
+    jpegCanvas.width = canvas.width;
+    jpegCanvas.height = canvas.height;
+    const jCtx = jpegCanvas.getContext("2d");
+    if (!jCtx) throw new Error("Failed to get 2D context for JPEG conversion");
+    jCtx.drawImage(jpegImg, 0, 0);
+
     // Assemble pages into jsPDF
     const { jsPDF } = await import("jspdf");
     const pdf = new jsPDF({
@@ -74,7 +90,7 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
     });
 
     const sliceHeightPx = Math.round(A4_HEIGHT_PX * CANVAS_SCALE);
-    const canvasWidth = canvas.width;
+    const canvasWidth = jpegCanvas.width;
 
     let currentY = 0;
     let pageIndex = 0;
@@ -98,15 +114,15 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
       const ctx = sliceCanvas.getContext("2d");
       if (!ctx) throw new Error("Failed to get 2D context for slicing");
 
-      ctx.drawImage(canvas, 0, sliceTop, canvasWidth, sliceH, 0, 0, canvasWidth, sliceH);
+      ctx.drawImage(jpegCanvas, 0, sliceTop, canvasWidth, sliceH, 0, 0, canvasWidth, sliceH);
 
-      const imgData = sliceCanvas.toDataURL("image/png");
+      const imgData = sliceCanvas.toDataURL("image/jpeg", 0.82);
       const sliceHeightMm = (sliceH / CANVAS_SCALE / A4_WIDTH_PX) * A4_WIDTH_MM;
 
       if (pageIndex > 0) {
         pdf.addPage();
       }
-      pdf.addImage(imgData, "PNG", 0, 0, A4_WIDTH_MM, sliceHeightMm);
+      pdf.addImage(imgData, "JPEG", 0, 0, A4_WIDTH_MM, sliceHeightMm);
 
       currentY = sliceBottom;
       pageIndex++;

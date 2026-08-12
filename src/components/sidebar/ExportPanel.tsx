@@ -73,7 +73,7 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
       const { jsPDF } = await import("jspdf");
 
       const canvas = await html2canvas(previewEl, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 0.82);
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -84,7 +84,7 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
       pdf.save("cv-export.pdf");
     } catch (err) {
       console.error("PDF export failed:", err);
