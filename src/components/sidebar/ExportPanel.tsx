@@ -2,6 +2,7 @@ import { useRef, useCallback } from "react";
 import { useCVStore } from "../../store/cvStore";
 import { useUIStore } from "../../store/uiStore";
 import { validateCVDocument, ValidationError } from "../../services/jsonValidation";
+import { exportAsImagePDF } from "../../services/pdfExport";
 import { showToast } from "../ui/Toast";
 
 interface ExportPanelProps {
@@ -69,23 +70,7 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
       const previewEl = document.getElementById("cv-preview");
       if (!previewEl) return;
 
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const canvas = await html2canvas(previewEl, { scale: 2 });
-      const imgData = canvas.toDataURL("image/jpeg", 0.82);
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("cv-export.pdf");
+      await exportAsImagePDF(previewEl);
     } catch (err) {
       console.error("PDF export failed:", err);
       showToast("خطا در ساخت PDF", "error");

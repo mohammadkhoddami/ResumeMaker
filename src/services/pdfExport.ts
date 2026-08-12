@@ -46,9 +46,7 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
       };
     });
 
-    const totalHeight = bounds.length > 0
-      ? bounds[bounds.length - 1].bottom
-      : clone.scrollHeight;
+    const totalHeight = clone.scrollHeight;
 
     // Smart pagination: find break points that prefer section boundaries
     const pageBreaks = computePageBreaks(bounds, totalHeight);
@@ -95,6 +93,8 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
     let currentY = 0;
     let pageIndex = 0;
 
+    const maxSlicePx = A4_HEIGHT_PX * CANVAS_SCALE;
+
     while (currentY < totalHeight * CANVAS_SCALE) {
       const nextBreakPx =
         pageIndex < pageBreaks.length
@@ -102,7 +102,13 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
           : totalHeight * CANVAS_SCALE;
 
       const sliceTop = currentY;
-      const sliceBottom = Math.min(nextBreakPx, totalHeight * CANVAS_SCALE);
+      let sliceBottom = Math.min(nextBreakPx, totalHeight * CANVAS_SCALE);
+
+      // Clamp: never exceed one full A4 page height per slice
+      if (sliceBottom - sliceTop > maxSlicePx) {
+        sliceBottom = sliceTop + maxSlicePx;
+      }
+
       const sliceH = sliceBottom - sliceTop;
 
       if (sliceH <= 0) break;
@@ -138,7 +144,7 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
  * Computes optimal page-break Y positions (in px relative to clone top).
  * Prefers breaking between sections rather than mid-section.
  */
-function computePageBreaks(bounds: { top: number; bottom: number }[], totalHeight: number): number[] {
+export function computePageBreaks(bounds: { top: number; bottom: number }[], totalHeight: number): number[] {
   const breaks: number[] = [];
   let pageBottom = A4_HEIGHT_PX;
 
@@ -156,6 +162,11 @@ function computePageBreaks(bounds: { top: number; bottom: number }[], totalHeigh
 
     breaks.push(bestBreak);
     pageBottom = bestBreak + A4_HEIGHT_PX;
+  }
+
+  // Guard: remove the last break if it would produce a near-empty trailing page
+  if (breaks.length > 0 && totalHeight - breaks[breaks.length - 1] < 40) {
+    breaks.pop();
   }
 
   return breaks;

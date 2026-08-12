@@ -245,21 +245,6 @@ export function getItemCardClasses(style: ItemCardStyle, padding = "p-4"): strin
     case "flat":
       return padding;
     case "dotted-separator":
-      return "pb-3 border-b border-dotted border-gray-300 last:border-b-0";
-    case "shadowed":
-      return `rounded-lg ${padding} shadow-sm`;
-    default:
-      return `border border-gray-100 rounded-lg ${padding}`;
-  }
-}
-
-export function getItemCardClasses(style: ItemCardStyle, padding = "p-4"): string {
-  switch (style) {
-    case "bordered":
-      return `border border-gray-100 rounded-lg ${padding}`;
-    case "flat":
-      return padding;
-    case "dotted-separator":
       return `pb-3 border-b border-dotted border-gray-300 last:border-b-0`;
     case "shadowed":
       return `rounded-lg ${padding} shadow-sm`;

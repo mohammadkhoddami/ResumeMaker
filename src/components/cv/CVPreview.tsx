@@ -5,6 +5,7 @@ import { useDragDrop } from "../../hooks/useDragDrop";
 import { SectionRenderer } from "./SectionRenderer";
 import { IconButton } from "../ui/IconButton";
 import { THEMES } from "../../utils/defaults";
+import { computePageBreaks } from "../../services/pdfExport";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
@@ -30,9 +31,8 @@ export function CVPreview() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [paddingTop, setPaddingTop] = useState(0);
-  const [paddingBottom, setPaddingBottom] = useState(0);
+  const [totalHeight, setTotalHeight] = useState(0);
+  const [sectionBounds, setSectionBounds] = useState<{ top: number; bottom: number }[]>([]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -40,29 +40,30 @@ export function CVPreview() {
     if (!el || !contentEl) return;
 
     const measure = () => {
-      const style = getComputedStyle(contentEl);
-      const pt = parseFloat(style.paddingTop) || 0;
-      const pb = parseFloat(style.paddingBottom) || 0;
-      setPaddingTop(pt);
-      setPaddingBottom(pb);
-      setContentHeight(el.scrollHeight);
+      const containerRect = el.getBoundingClientRect();
+      const sectionEls = Array.from(contentEl.children) as HTMLElement[];
+
+      const bounds = sectionEls.map((sec) => {
+        const rect = sec.getBoundingClientRect();
+        return {
+          top: rect.top - containerRect.top,
+          bottom: rect.bottom - containerRect.top,
+        };
+      });
+
+      setSectionBounds(bounds);
+      setTotalHeight(el.scrollHeight);
     };
 
     const observer = new ResizeObserver(measure);
     observer.observe(el);
+    observer.observe(contentEl);
     measure();
 
     return () => observer.disconnect();
-  }, []);
+  }, [sections.length]);
 
-  const effectiveContentHeight = contentHeight - paddingTop - paddingBottom;
-  const pageContentHeight = A4_HEIGHT_PX - paddingTop - paddingBottom;
-  const pageBreaks: number[] = [];
-  if (effectiveContentHeight > pageContentHeight) {
-    for (let y = pageContentHeight; y < effectiveContentHeight; y += pageContentHeight) {
-      pageBreaks.push(paddingTop + y);
-    }
-  }
+  const pageBreaks = computePageBreaks(sectionBounds, totalHeight);
 
   return (
     <div className="flex justify-center bg-gray-200 py-10 px-4 min-h-screen" dir="rtl">
