@@ -1,0 +1,77 @@
+{#- Theme: Minimal — compact header, uppercase titles, dotted separators -#}
+
+{% macro theme_css(theme_config, accent_color) %}
+/* ── Minimal Theme ───────────────────────────────────────────── */
+.section-title {
+  font-family: {{ theme_config.heading_font }};
+  color: {{ accent_color }};
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-bottom: {{ theme_config.spacing.item_gap }}px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cv-item {
+  padding-bottom: 12px;
+  border-bottom: 1px dotted #d1d5db;
+  margin-bottom: {{ theme_config.spacing.item_gap }}px;
+}
+.cv-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.cv-header-compact {
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.cv-header-compact h1 {
+  font-family: {{ theme_config.heading_font }};
+  font-size: 1.5em;
+  font-weight: 700;
+  color: {{ theme_config.colors.text }};
+  display: inline;
+}
+.cv-header-compact .cv-header-title {
+  font-size: 1em;
+  color: {{ theme_config.colors.secondary }};
+  margin-right: 12px;
+}
+.cv-header-compact .cv-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.8em;
+  color: {{ theme_config.colors.secondary }};
+  margin-top: 6px;
+}
+{% endmacro %}
+
+{% macro render_section_title(title, accent_color) %}
+<h2 class="section-title">{{ title }}</h2>
+{% endmacro %}
+
+{% macro render_item_wrapper() %}
+<div class="cv-item">
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro render_header(section, theme_config, accent_color) %}
+<section class="cv-section" style="margin-bottom: {{ theme_config.spacing.section_gap }}px;">
+  <div class="cv-header-compact">
+    <h1>{{ section.data.name }}</h1>
+    {% if section.data.title %}
+    <span class="cv-header-title">{{ section.data.title }}</span>
+    {% endif %}
+    <div class="cv-header-meta">
+      {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+      {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+      {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+      {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+      {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+    </div>
+  </div>
+</section>
+{% endmacro %}

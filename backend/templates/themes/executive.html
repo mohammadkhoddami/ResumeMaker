@@ -1,0 +1,87 @@
+{#- Theme: Executive — sidebar-accent header, side-bar titles, shadowed cards -#}
+
+{% macro theme_css(theme_config, accent_color) %}
+/* ── Executive Theme ─────────────────────────────────────────── */
+.section-title {
+  font-family: {{ theme_config.heading_font }};
+  color: {{ accent_color }};
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-bottom: {{ theme_config.spacing.item_gap }}px;
+  border-right: 4px solid {{ accent_color }};
+  padding-right: 10px;
+}
+
+.cv-item {
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: {{ theme_config.spacing.item_gap }}px;
+}
+.cv-item:last-child {
+  margin-bottom: 0;
+}
+
+.cv-header-sidebar {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.cv-header-sidebar .cv-header-accent-bar {
+  width: 4px;
+  min-height: 60px;
+  background: {{ accent_color }};
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.cv-header-sidebar h1 {
+  font-family: {{ theme_config.heading_font }};
+  font-size: 1.8em;
+  font-weight: 700;
+  color: {{ theme_config.colors.text }};
+  margin-bottom: 4px;
+}
+.cv-header-sidebar .cv-header-title {
+  font-size: 1.1em;
+  color: {{ theme_config.colors.secondary }};
+  margin-bottom: 8px;
+}
+.cv-header-sidebar .cv-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85em;
+  color: {{ theme_config.colors.secondary }};
+}
+{% endmacro %}
+
+{% macro render_section_title(title, accent_color) %}
+<h2 class="section-title">{{ title }}</h2>
+{% endmacro %}
+
+{% macro render_item_wrapper() %}
+<div class="cv-item">
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro render_header(section, theme_config, accent_color) %}
+<section class="cv-section" style="margin-bottom: {{ theme_config.spacing.section_gap }}px;">
+  <div class="cv-header-sidebar">
+    <div class="cv-header-accent-bar"></div>
+    <div>
+      <h1>{{ section.data.name }}</h1>
+      {% if section.data.title %}
+      <p class="cv-header-title">{{ section.data.title }}</p>
+      {% endif %}
+      <div class="cv-header-meta">
+        {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+        {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+        {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+        {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+        {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endmacro %}

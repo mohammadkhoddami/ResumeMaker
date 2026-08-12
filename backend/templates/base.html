@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>رزومه</title>
+
+  {# ── Import theme macros ─────────────────────────────────────── #}
+  {% if theme_config.id == "modern" %}
+    {% import "themes/modern.html" as theme %}
+  {% elif theme_config.id == "classic" %}
+    {% import "themes/classic.html" as theme %}
+  {% elif theme_config.id == "minimal" %}
+    {% import "themes/minimal.html" as theme %}
+  {% elif theme_config.id == "executive" %}
+    {% import "themes/executive.html" as theme %}
+  {% endif %}
+
   <style>
     /* ── Font Faces ─────────────────────────────────────────────── */
     @font-face {
@@ -113,85 +125,15 @@
       text-rendering: geometricPrecision;
     }
 
-    /* ── Section Title Styles ───────────────────────────────────── */
-    .section-title {
-      font-family: {{ theme_config.heading_font }};
-      color: {{ accent_color }};
-      font-size: 1.1em;
-      font-weight: 700;
-      margin-bottom: {{ theme_config.spacing.item_gap }}px;
-    }
-
-    {% if theme_config.section_title_style == "underlined" %}
-    .section-title {
-      border-bottom: 2px solid {{ accent_color }};
-      padding-bottom: 4px;
-    }
-    {% elif theme_config.section_title_style == "boxed" %}
-    .section-title {
-      border: 1px solid {{ accent_color }};
-      padding: 4px 10px;
-      display: inline-block;
-    }
-    {% elif theme_config.section_title_style == "side-bar" %}
-    .section-title {
-      border-right: 4px solid {{ accent_color }};
-      padding-right: 10px;
-    }
-    {% elif theme_config.section_title_style == "uppercase-plain" %}
-    .section-title {
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    {% endif %}
-
-    /* ── Item Card Styles ───────────────────────────────────────── */
-    {% if theme_config.item_card_style == "bordered" %}
-    .cv-item {
-      border: 1px solid #f3f4f6;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: {{ theme_config.spacing.item_gap }}px;
-    }
-    .cv-item:last-child {
-      margin-bottom: 0;
-    }
-    {% elif theme_config.item_card_style == "flat" %}
-    .cv-item {
-      padding: 8px 0;
-      margin-bottom: {{ theme_config.spacing.item_gap }}px;
-    }
-    .cv-item:last-child {
-      margin-bottom: 0;
-    }
-    {% elif theme_config.item_card_style == "dotted-separator" %}
-    .cv-item {
-      padding-bottom: 12px;
-      border-bottom: 1px dotted #d1d5db;
-      margin-bottom: {{ theme_config.spacing.item_gap }}px;
-    }
-    .cv-item:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-    {% elif theme_config.item_card_style == "shadowed" %}
-    .cv-item {
-      border-radius: 8px;
-      padding: 12px 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      margin-bottom: {{ theme_config.spacing.item_gap }}px;
-    }
-    .cv-item:last-child {
-      margin-bottom: 0;
-    }
-    {% endif %}
+    /* ── Theme-specific styles ──────────────────────────────────── */
+    {{ theme.theme_css(theme_config, accent_color) }}
   </style>
 </head>
 <body>
   <div id="cv-preview" style="width: 210mm; min-height: 297mm; margin: 0 auto; background: {{ theme_config.colors.background }}; padding: 20mm 18mm;">
     {% for section in document.sections %}
       {% if section.type == "header" %}
-        {% include "sections/header.html" %}
+        {{ theme.render_header(section, theme_config, accent_color) }}
       {% elif section.type == "summary" %}
         {% include "sections/summary.html" %}
       {% elif section.type == "experience" %}
