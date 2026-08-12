@@ -6,3 +6,7 @@ pydantic>=2.0,<3.0
 pydantic-settings
 python-multipart
 httpx
+
+# dev/test
+pytest>=8.0
+pytest-asyncio>=0.23
