@@ -7,14 +7,13 @@ import type { ProjectsSection as ProjectsSectionData, ProjectItem } from "../../
 
 interface Props {
   section: ProjectsSectionData;
-  index: number;
 }
 
-export function ProjectsSection({ section, index }: Props) {
+export function ProjectsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   const updateItems = (items: ProjectItem[]) => {
-    updateSection(String(index), { items });
+    updateSection(section.id, { items });
   };
 
   const updateItem = (itemId: string, patch: Partial<ProjectItem>) => {

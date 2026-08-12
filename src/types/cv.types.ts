@@ -20,11 +20,13 @@ export interface HeaderData {
 }
 
 export interface HeaderSection {
+  id: string;
   type: "header";
   data: HeaderData;
 }
 
 export interface SummarySection {
+  id: string;
   type: "summary";
   content: string;
 }
@@ -39,6 +41,7 @@ export interface ExperienceItem {
 }
 
 export interface ExperienceSection {
+  id: string;
   type: "experience";
   items: ExperienceItem[];
 }
@@ -52,6 +55,7 @@ export interface EducationItem {
 }
 
 export interface EducationSection {
+  id: string;
   type: "education";
   items: EducationItem[];
 }
@@ -63,6 +67,7 @@ export interface SkillGroup {
 }
 
 export interface SkillsSection {
+  id: string;
   type: "skills";
   groups: SkillGroup[];
 }
@@ -76,6 +81,7 @@ export interface ProjectItem {
 }
 
 export interface ProjectsSection {
+  id: string;
   type: "projects";
   items: ProjectItem[];
 }
@@ -88,6 +94,7 @@ export interface CertificationItem {
 }
 
 export interface CertificationsSection {
+  id: string;
   type: "certifications";
   items: CertificationItem[];
 }
@@ -99,11 +106,13 @@ export interface LanguageItem {
 }
 
 export interface LanguagesSection {
+  id: string;
   type: "languages";
   items: LanguageItem[];
 }
 
 export interface CustomSection {
+  id: string;
   type: "custom";
   content: string;
 }

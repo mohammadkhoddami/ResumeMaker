@@ -7,14 +7,13 @@ import type { LanguagesSection as LanguagesSectionData, LanguageItem } from "../
 
 interface Props {
   section: LanguagesSectionData;
-  index: number;
 }
 
-export function LanguagesSection({ section, index }: Props) {
+export function LanguagesSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   const updateItems = (items: LanguageItem[]) => {
-    updateSection(String(index), { items });
+    updateSection(section.id, { items });
   };
 
   const updateItem = (itemId: string, patch: Partial<LanguageItem>) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { SECTION_LABELS } from "../../utils/defaults";
-import { EditableText } from "../ui/EditableText";
+
 import type { CVSection, SectionType } from "../../types/cv.types";
 
 import { HeaderSection } from "./sections/HeaderSection";
@@ -15,10 +15,9 @@ import { CustomSection } from "./sections/CustomSection";
 
 interface SectionRendererProps {
   section: CVSection;
-  index: number;
 }
 
-const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any; index: number }>> = {
+const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any }>> = {
   header: HeaderSection,
   summary: SummarySection,
   experience: ExperienceSection,
@@ -30,27 +29,23 @@ const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any
   custom: CustomSection,
 };
 
-export function SectionRenderer({ section, index }: SectionRendererProps) {
+export function SectionRenderer({ section }: SectionRendererProps) {
   const Component = SECTION_COMPONENTS[section.type];
 
   if (!Component) return null;
 
   if (section.type === "header") {
-    return <Component section={section} index={index} />;
+    return <Component section={section} />;
   }
 
   return (
     <div className="cv-item space-y-3">
       <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-        <EditableText
-          tag="h3"
-          value={SECTION_LABELS[section.type]}
-          onChange={() => {}}
-          className="text-base font-bold text-gray-800 outline-none select-none"
-          direction="rtl"
-        />
+        <h3 className="text-base font-bold text-gray-800">
+          {SECTION_LABELS[section.type]}
+        </h3>
       </div>
-      <Component section={section} index={index} />
+      <Component section={section} />
     </div>
   );
 }

@@ -7,14 +7,13 @@ import type { CertificationsSection as CertificationsSectionData, CertificationI
 
 interface Props {
   section: CertificationsSectionData;
-  index: number;
 }
 
-export function CertificationsSection({ section, index }: Props) {
+export function CertificationsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   const updateItems = (items: CertificationItem[]) => {
-    updateSection(String(index), { items });
+    updateSection(section.id, { items });
   };
 
   const updateItem = (itemId: string, patch: Partial<CertificationItem>) => {

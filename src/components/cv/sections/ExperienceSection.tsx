@@ -7,14 +7,13 @@ import type { ExperienceSection as ExperienceSectionData, ExperienceItem } from 
 
 interface Props {
   section: ExperienceSectionData;
-  index: number;
 }
 
-export function ExperienceSection({ section, index }: Props) {
+export function ExperienceSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   const updateItems = (items: ExperienceItem[]) => {
-    updateSection(String(index), { items });
+    updateSection(section.id, { items });
   };
 
   const updateItem = (itemId: string, patch: Partial<ExperienceItem>) => {

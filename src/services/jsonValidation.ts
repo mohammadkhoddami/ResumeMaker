@@ -44,7 +44,20 @@ export function validateCVDocument(data: unknown): CVDocument {
         `sections[${i}]`
       );
     }
-    if (!("type" in (section as Record<string, unknown>))) {
+    const sectionObj = section as Record<string, unknown>;
+    if (!("id" in sectionObj)) {
+      throw new ValidationError(
+        `sections[${i}] is missing required field "id"`,
+        `sections[${i}].id`
+      );
+    }
+    if (typeof sectionObj.id !== "string" || sectionObj.id.length === 0) {
+      throw new ValidationError(
+        `sections[${i}].id must be a non-empty string, got ${typeof sectionObj.id}`,
+        `sections[${i}].id`
+      );
+    }
+    if (!("type" in sectionObj)) {
       throw new ValidationError(
         `sections[${i}] is missing required field "type"`,
         `sections[${i}].type`

@@ -7,14 +7,13 @@ import type { SkillsSection as SkillsSectionData, SkillGroup } from "../../../ty
 
 interface Props {
   section: SkillsSectionData;
-  index: number;
 }
 
-export function SkillsSection({ section, index }: Props) {
+export function SkillsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   const updateGroups = (groups: SkillGroup[]) => {
-    updateSection(String(index), { groups });
+    updateSection(section.id, { groups });
   };
 
   const updateGroup = (groupId: string, patch: Partial<SkillGroup>) => {

@@ -5,10 +5,9 @@ import type { SummarySection as SummarySectionData } from "../../../types/cv.typ
 
 interface Props {
   section: SummarySectionData;
-  index: number;
 }
 
-export function SummarySection({ section, index }: Props) {
+export function SummarySection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
 
   return (
@@ -16,7 +15,7 @@ export function SummarySection({ section, index }: Props) {
       <EditableText
         tag="p"
         value={section.content}
-        onChange={(v) => updateSection(String(index), { content: v })}
+        onChange={(v) => updateSection(section.id, { content: v })}
         placeholder="خلاصه‌ای از سوابق و اهداف حرفه‌ای خود را بنویسید..."
         multiline
         className="text-sm text-gray-700 leading-relaxed block outline-none focus:ring-2 focus:ring-blue-300 rounded px-1 min-h-[3rem]"

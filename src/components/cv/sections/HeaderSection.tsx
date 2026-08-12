@@ -5,12 +5,11 @@ import type { HeaderSection as HeaderSectionData } from "../../../types/cv.types
 
 interface Props {
   section: HeaderSectionData;
-  index: number;
 }
 
 const DARK_THEMES = new Set(["classic", "minimal", "executive"]);
 
-export function HeaderSection({ section, index }: Props) {
+export function HeaderSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
   const theme = useCVStore((s) => s.document.theme);
   const accentColor = useCVStore((s) => s.document.accentColor);
@@ -18,7 +17,7 @@ export function HeaderSection({ section, index }: Props) {
   const isDark = DARK_THEMES.has(theme);
 
   const updateField = (field: keyof HeaderSectionData["data"], value: string) => {
-    updateSection(String(index), {
+    updateSection(section.id, {
       data: { ...section.data, [field]: value },
     });
   };

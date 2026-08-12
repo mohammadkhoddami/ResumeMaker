@@ -7,6 +7,7 @@ import { IconButton } from "../ui/IconButton";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
+const CONTENT_TOP_PADDING = 40; // p-10 on the inner content wrapper
 
 export function CVPreview() {
   const document = useCVStore((s) => s.document);
@@ -42,9 +43,10 @@ export function CVPreview() {
     return () => observer.disconnect();
   }, []);
 
+  const effectiveHeight = contentHeight - CONTENT_TOP_PADDING;
   const pageBreaks: number[] = [];
-  if (contentHeight > A4_HEIGHT_PX) {
-    for (let y = A4_HEIGHT_PX; y < contentHeight; y += A4_HEIGHT_PX) {
+  if (effectiveHeight > A4_HEIGHT_PX) {
+    for (let y = A4_HEIGHT_PX; y < effectiveHeight; y += A4_HEIGHT_PX) {
       pageBreaks.push(y);
     }
   }
@@ -52,6 +54,7 @@ export function CVPreview() {
   return (
     <div className="flex justify-center bg-gray-200 py-10 px-4 min-h-screen" dir="rtl">
       <div
+        id="cv-preview"
         ref={containerRef}
         className={`relative bg-white shadow-xl ${exporting ? "pdf-export" : ""}`}
         style={
@@ -83,7 +86,7 @@ export function CVPreview() {
 
             return (
               <div
-                key={index}
+                key={section.id}
                 draggable={!exporting}
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => handleDragOver(e, index)}
@@ -119,7 +122,7 @@ export function CVPreview() {
                     </IconButton>
                     <IconButton
                       label="Delete section"
-                      onClick={() => removeSection(String(index))}
+                      onClick={() => removeSection(section.id)}
                     >
                       ×
                     </IconButton>
@@ -132,7 +135,7 @@ export function CVPreview() {
                   </div>
                 )}
 
-                <SectionRenderer section={section} index={index} />
+                <SectionRenderer section={section} />
               </div>
             );
           })}

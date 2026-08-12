@@ -17,32 +17,36 @@ export function Sidebar({ user }: SidebarProps) {
   const { saveToCloud } = useCloudSync(user);
 
   return (
-    <aside
-      className={`relative flex h-full flex-col bg-gray-900 text-gray-100 transition-all duration-300 ${
-        sidebarOpen ? "w-64" : "w-0"
-      } overflow-hidden`}
-    >
+    <div className="relative flex h-full shrink-0">
+      <aside
+        className={`flex h-full flex-col bg-gray-900 text-gray-100 transition-all duration-300 ${
+          sidebarOpen ? "w-64" : "w-0"
+        } overflow-hidden`}
+      >
+        {sidebarOpen && (
+          <div className="flex h-full flex-col gap-6 overflow-y-auto p-4">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-gray-400">
+              تنظیمات رزومه
+            </h2>
+
+            <ThemeSelector />
+            <AccentColorPicker />
+            <FontSizeSlider />
+            <SectionAdder />
+            <ExportPanel saveToCloud={saveToCloud} />
+          </div>
+        )}
+      </aside>
+
       <button
         onClick={toggleSidebar}
-        className="absolute top-3 -right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-xs text-gray-300 hover:bg-gray-600"
+        className={`absolute top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-xs text-gray-300 hover:bg-gray-600 ${
+          sidebarOpen ? "-right-3" : "left-0"
+        }`}
         aria-label={sidebarOpen ? "بستن پنل" : "باز کردن پنل"}
       >
         {sidebarOpen ? "‹" : "›"}
       </button>
-
-      {sidebarOpen && (
-        <div className="flex h-full flex-col gap-6 overflow-y-auto p-4">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-gray-400">
-            تنظیمات رزومه
-          </h2>
-
-          <ThemeSelector />
-          <AccentColorPicker />
-          <FontSizeSlider />
-          <SectionAdder />
-          <ExportPanel saveToCloud={saveToCloud} />
-        </div>
-      )}
-    </aside>
+    </div>
   );
 }

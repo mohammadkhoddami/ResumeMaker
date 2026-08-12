@@ -51,12 +51,8 @@ export const useCVStore = create<CVStore>()(
 
       updateSection: (id, patch) =>
         set((state) => {
-          const index = Number(id);
-          if (Number.isNaN(index) || index < 0 || index >= state.document.sections.length) {
-            return state;
-          }
-          const sections = state.document.sections.map((section, i) =>
-            i === index ? { ...section, ...patch } : section
+          const sections = state.document.sections.map((section) =>
+            section.id === id ? { ...section, ...patch } : section
           );
           return { document: { ...state.document, sections } };
         }),
@@ -74,11 +70,7 @@ export const useCVStore = create<CVStore>()(
 
       removeSection: (id) =>
         set((state) => {
-          const index = Number(id);
-          if (Number.isNaN(index) || index < 0 || index >= state.document.sections.length) {
-            return state;
-          }
-          const sections = state.document.sections.filter((_, i) => i !== index);
+          const sections = state.document.sections.filter((section) => section.id !== id);
           return { document: { ...state.document, sections } };
         }),
 

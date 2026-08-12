@@ -17,6 +17,7 @@ import { generateId } from "./id";
 
 export function createHeaderSection(): HeaderSection {
   return {
+    id: generateId(),
     type: "header",
     data: {
       name: "",
@@ -32,6 +33,7 @@ export function createHeaderSection(): HeaderSection {
 
 export function createSummarySection(): SummarySection {
   return {
+    id: generateId(),
     type: "summary",
     content: "",
   };
@@ -39,6 +41,7 @@ export function createSummarySection(): SummarySection {
 
 export function createExperienceSection(): ExperienceSection {
   return {
+    id: generateId(),
     type: "experience",
     items: [
       {
@@ -55,6 +58,7 @@ export function createExperienceSection(): ExperienceSection {
 
 export function createEducationSection(): EducationSection {
   return {
+    id: generateId(),
     type: "education",
     items: [
       {
@@ -70,6 +74,7 @@ export function createEducationSection(): EducationSection {
 
 export function createSkillsSection(): SkillsSection {
   return {
+    id: generateId(),
     type: "skills",
     groups: [
       {
@@ -83,6 +88,7 @@ export function createSkillsSection(): SkillsSection {
 
 export function createProjectsSection(): ProjectsSection {
   return {
+    id: generateId(),
     type: "projects",
     items: [
       {
@@ -98,6 +104,7 @@ export function createProjectsSection(): ProjectsSection {
 
 export function createCertificationsSection(): CertificationsSection {
   return {
+    id: generateId(),
     type: "certifications",
     items: [
       {
@@ -112,6 +119,7 @@ export function createCertificationsSection(): CertificationsSection {
 
 export function createLanguagesSection(): LanguagesSection {
   return {
+    id: generateId(),
     type: "languages",
     items: [
       {
@@ -125,6 +133,7 @@ export function createLanguagesSection(): LanguagesSection {
 
 export function createCustomSection(): CustomSection {
   return {
+    id: generateId(),
     type: "custom",
     content: "",
   };
