@@ -4,7 +4,7 @@
 /* ── Classic Theme ───────────────────────────────────────────── */
 .section-title {
   font-family: {{ theme_config.heading_font }};
-  color: {{ accent_color }};
+  color: {{ theme_config.colors.primary }};
   font-size: 1.1em;
   font-weight: 700;
   margin-bottom: {{ theme_config.spacing.item_gap }}px;
@@ -12,13 +12,11 @@
   padding: 4px 10px;
   display: inline-block;
   border-radius: 999px;
+  background-color: {{ theme_config.colors.primary }}14;
 }
 
 .cv-item {
   padding: 8px 0;
-  margin-bottom: {{ theme_config.spacing.item_gap }}px;
-}
-.cv-item:last-child {
   margin-bottom: 0;
 }
 
