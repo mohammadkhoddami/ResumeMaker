@@ -1,0 +1,12 @@
+__pycache__
+.venv
+venv
+*.pyc
+*.pyo
+*.egg-info
+.env
+static/fonts/*.woff2
+static/fonts/*.ttf
+static/fonts/*.otf
+.git
+.gitignore
