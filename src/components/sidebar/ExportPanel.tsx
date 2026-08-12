@@ -60,9 +60,15 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
     []
   );
 
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
+  const handlePrint = useCallback(async () => {
+    setExporting(true);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    try {
+      window.print();
+    } finally {
+      setExporting(false);
+    }
+  }, [setExporting]);
 
   const handlePdfExport = useCallback(async () => {
     setExporting(true);

@@ -1,7 +1,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 
   body {
@@ -10,44 +10,68 @@
     font-synthesis: none;
   }
 
+  /* (e) Hide sidebar, action buttons, and drag/move/delete controls */
   aside,
   .no-print,
   .cv-action-btn {
     display: none !important;
   }
 
+  /* Hide the drag/move/delete control column inside each section */
+  #cv-preview .group > .flex.flex-col.items-center {
+    display: none !important;
+  }
+
+  /* Reset the app shell layout */
   .flex.h-screen {
     display: block !important;
     height: auto !important;
     overflow: visible !important;
   }
 
-  .pdf-export {
-    box-shadow: none !important;
-    margin: 0 !important;
+  /* (d) Force A4 width, remove shadow and min-height */
+  #cv-preview {
     width: 210mm !important;
     min-height: auto !important;
+    box-shadow: none !important;
+    margin: 0 !important;
   }
 
-  .pdf-export * {
+  /* (f) Preserve theme/accent colors in printed output */
+  #cv-preview,
+  #cv-preview * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  .pdf-export .relative.z-10 > div {
+  /* Zero out section margins; rely on parent flex gap for spacing */
+  .cv-section-spacing {
+    margin-bottom: 0;
+  }
+
+  /* (b) Break-inside avoid on each section wrapper (direct children of content div) */
+  #cv-preview .relative.z-10 > div {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  .pdf-export h1,
-  .pdf-export h2,
-  .pdf-export h3 {
+  /* (b) Keep headings attached to the content that follows */
+  #cv-preview h1,
+  #cv-preview h2,
+  #cv-preview h3 {
     break-after: avoid;
     page-break-after: avoid;
   }
 
-  .pdf-export p,
-  .pdf-export li {
+  /* (c) Prevent a section title from being orphaned at page bottom */
+  #cv-preview h3 {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  /* (b) Orphan/widow control on text content */
+  #cv-preview p,
+  #cv-preview li {
     orphans: 3;
     widows: 3;
   }
@@ -55,8 +79,4 @@
   * {
     text-rendering: geometricPrecision;
   }
-}
-
-.pdf-export .cv-action-btn {
-  display: none !important;
 }

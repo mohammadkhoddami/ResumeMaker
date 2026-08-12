@@ -123,7 +123,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   };
 
   return (
-    <div className="cv-item" style={{ marginBottom: themeConfig.spacing.sectionGap }}>
+    <div className="cv-item cv-section-spacing">
       {renderTitle()}
       <Component section={section} />
     </div>

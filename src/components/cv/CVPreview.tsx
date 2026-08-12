@@ -74,13 +74,14 @@ export function CVPreview() {
         style={
           {
             width: `${A4_WIDTH_PX}px`,
-            minHeight: `${A4_HEIGHT_PX}px`,
+            minHeight: exporting ? "auto" : `${A4_HEIGHT_PX}px`,
             fontSize: `${fontSize}px`,
             fontFamily: themeConfig.fontFamily,
             backgroundColor: themeConfig.colors.background,
             color: themeConfig.colors.text,
             "--accent-color": accentColor,
             "--item-gap": `${themeConfig.spacing.itemGap}px`,
+            "--section-gap": `${themeConfig.spacing.sectionGap}px`,
           } as React.CSSProperties
         }
       >

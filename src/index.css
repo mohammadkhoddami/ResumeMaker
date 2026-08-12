@@ -34,6 +34,10 @@ body {
   background-color: rgba(59, 130, 246, 0.04);
 }
 
+.cv-section-spacing {
+  margin-bottom: var(--section-gap, 0px);
+}
+
 .section-title-uppercase {
   text-transform: uppercase;
   letter-spacing: 0.08em;
