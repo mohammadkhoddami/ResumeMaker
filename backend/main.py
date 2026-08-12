@@ -1,5 +1,13 @@
+import asyncio
+import sys
 from contextlib import asynccontextmanager
 from io import BytesIO
+
+# Windows requires ProactorEventLoop for subprocess support (Playwright).
+# Uvicorn may otherwise default to SelectorEventLoop which raises
+# NotImplementedError on asyncio.create_subprocess_exec.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -7,9 +15,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import settings
-from .models.cv_document import CVDocument
-from .services.pdf_generator import (
+from config import settings
+from models.cv_document import CVDocument
+from services.pdf_generator import (
     PDFGenerationError,
     TemplateRenderError,
     close_browser,

@@ -11,8 +11,8 @@ from playwright.async_api import (
     async_playwright,
 )
 
-from ..config import settings
-from ..models.cv_document import CVDocument, ThemeConfigRegistry
+from config import settings
+from models.cv_document import CVDocument, ThemeConfigRegistry
 
 logger = logging.getLogger(__name__)
 
