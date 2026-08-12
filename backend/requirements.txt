@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+jinja2
+playwright
+pydantic>=2.0,<3.0
+pydantic-settings
+python-multipart
+httpx
