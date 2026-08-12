@@ -1,15 +1,25 @@
-<section class="cv-section">
+<section class="cv-section" style="margin-bottom: 0;">
   <h2 class="section-title">گواهینامه‌ها</h2>
+  {% set card_style = '' %}
+  {% if theme_config.item_card_style == 'bordered' %}
+  {% set card_style = 'border: 1px solid #f3f4f6; border-radius: 0.5rem; padding: 0.75rem;' %}
+  {% elif theme_config.item_card_style == 'flat' %}
+  {% set card_style = 'padding: 0.75rem;' %}
+  {% elif theme_config.item_card_style == 'dotted-separator' %}
+  {% set card_style = 'padding-bottom: 0.75rem; border-bottom: 1px dotted #d1d5db;' %}
+  {% elif theme_config.item_card_style == 'shadowed' %}
+  {% set card_style = 'border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);' %}
+  {% endif %}
   {% for item in section.items %}
-  <div class="cv-item">
+  <div class="cv-item" style="{{ card_style }}">
     <div style="display: flex; justify-content: space-between; align-items: baseline;">
-      <h3 style="font-family: {{ theme_config.heading_font }}; font-size: 1em; font-weight: 700; color: {{ theme_config.colors.text }};">{{ item.name }}</h3>
+      <h3 style="font-family: {{ theme_config.heading_font }}; font-size: 1em; font-weight: 700; color: {{ theme_config.colors.text }}; margin: 0;">{{ item.name }}</h3>
       {% if item.date %}
       <span style="font-size: 0.85em; color: {{ theme_config.colors.secondary }};">{{ item.date }}</span>
       {% endif %}
     </div>
     {% if item.issuer %}
-    <p style="font-size: 0.9em; color: {{ theme_config.colors.secondary }}; margin-top: 2px;">{{ item.issuer }}</p>
+    <p style="font-size: 0.9em; color: {{ theme_config.colors.secondary }}; margin-top: 2px; margin-bottom: 0;">{{ item.issuer }}</p>
     {% endif %}
   </div>
   {% endfor %}
