@@ -2,7 +2,7 @@ import { useRef, useCallback } from "react";
 import { useCVStore } from "../../store/cvStore";
 import { useUIStore } from "../../store/uiStore";
 import { validateCVDocument, ValidationError } from "../../services/jsonValidation";
-import { exportAsImagePDF } from "../../services/pdfExport";
+import { exportPdfViaApi } from "../../services/pdfApiService";
 import { showToast } from "../ui/Toast";
 
 interface ExportPanelProps {
@@ -73,10 +73,14 @@ export function ExportPanel({ saveToCloud }: ExportPanelProps) {
   const handlePdfExport = useCallback(async () => {
     setExporting(true);
     try {
-      const previewEl = document.getElementById("cv-preview");
-      if (!previewEl) return;
-
-      await exportAsImagePDF(previewEl);
+      const cvDoc = useCVStore.getState().document;
+      const blob = await exportPdfViaApi(cvDoc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "cv-export.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
       showToast("خطا در ساخت PDF", "error");
