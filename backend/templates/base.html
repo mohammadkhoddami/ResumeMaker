@@ -93,15 +93,17 @@
       }
     }
 
+    /* ── CV Preview Container (flex column layout) ──────────────── */
+    #cv-preview {
+      display: flex;
+      flex-direction: column;
+      gap: {{ theme_config.spacing.section_gap }}px;
+    }
+
     /* ── Section Break Control ──────────────────────────────────── */
     .cv-section {
       break-inside: avoid;
       page-break-inside: avoid;
-      margin-bottom: {{ theme_config.spacing.section_gap }}px;
-    }
-
-    .cv-section:last-child {
-      margin-bottom: 0;
     }
 
     /* ── Heading Orphan/Widow Control ───────────────────────────── */
