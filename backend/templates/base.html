@@ -103,11 +103,6 @@
     }
 
     /* ── Section Break Control ──────────────────────────────────── */
-    .cv-section {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-
     .cv-item {
       break-inside: avoid;
       page-break-inside: avoid;
@@ -120,6 +115,11 @@
     }
 
     h3 {
+      break-before: avoid;
+      page-break-before: avoid;
+    }
+
+    .section-title + * {
       break-before: avoid;
       page-break-before: avoid;
     }
