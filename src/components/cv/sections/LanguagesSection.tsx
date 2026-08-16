@@ -15,6 +15,8 @@ export function LanguagesSection({ section }: Props) {
   const theme = useCVStore((s) => s.document.theme);
   const themeConfig = THEMES[theme];
 
+  const isAts = theme === "ats";
+
   const updateItems = (items: LanguageItem[]) => {
     updateSection(section.id, { items });
   };
@@ -42,19 +44,19 @@ export function LanguagesSection({ section }: Props) {
   return (
     <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.items.map((item) => (
-        <div key={item.id} className="relative group flex items-center gap-3">
+        <div key={item.id} className={`relative group flex gap-3 ${isAts ? "flex-col gap-1" : "items-center"}`}>
           <EditableText
             value={item.name}
             onChange={(v) => updateItem(item.id, { name: v })}
             placeholder="زبان"
-            className="text-sm font-medium text-gray-900 w-24 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1"
+            className={`text-sm font-medium text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 ${isAts ? "w-full" : "w-24"}`}
             direction="rtl"
           />
           <EditableText
             value={item.level}
             onChange={(v) => updateItem(item.id, { level: v })}
             placeholder="سطح تسلط"
-            className="text-sm text-gray-600 flex-1 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1"
+            className={`text-sm text-gray-600 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 ${isAts ? "w-full" : "flex-1"}`}
             direction="rtl"
           />
           <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">

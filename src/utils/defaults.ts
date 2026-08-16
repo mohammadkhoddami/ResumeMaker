@@ -221,6 +221,23 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     sectionTitleStyle: "side-bar",
     itemCardStyle: "shadowed",
   },
+  ats: {
+    id: "ats",
+    name: "ATS-Friendly",
+    fontFamily: "Vazirmatn, Tahoma, Arial, sans-serif",
+    headingFont: "Vazirmatn, Tahoma, Arial, sans-serif",
+    spacing: { sectionGap: 20, itemGap: 10 },
+    colors: {
+      primary: "#111827",
+      secondary: "#374151",
+      background: "#ffffff",
+      text: "#111827",
+    },
+    headerBackground: null,
+    headerLayout: "compact",
+    sectionTitleStyle: "underlined",
+    itemCardStyle: "flat",
+  },
 };
 
 export const ACCENT_COLORS: string[] = [

@@ -1,5 +1,17 @@
 <section class="cv-section" style="margin-bottom: 0;">
   <h2 class="section-title">زبان‌ها</h2>
+  {% if theme_config.id == "ats" %}
+  <div style="display: flex; flex-direction: column; gap: {{ theme_config.spacing.item_gap }}px;">
+    {% for item in section.items %}
+    <div class="cv-item">
+      <h3 style="font-size: 0.95em; font-weight: 700; color: {{ theme_config.colors.text }}; margin: 0;">{{ item.name }}</h3>
+      {% if item.level %}
+      <p style="font-size: 0.85em; color: {{ theme_config.colors.secondary }}; margin-top: 2px; margin-bottom: 0;">{{ item.level }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
   <div style="display: flex; flex-wrap: wrap; gap: {{ theme_config.spacing.item_gap }}px;">
     {% for item in section.items %}
     <div class="cv-item" style="flex: 1; min-width: 120px;">
@@ -10,4 +22,5 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 </section>

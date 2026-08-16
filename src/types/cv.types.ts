@@ -128,7 +128,7 @@ export type CVSection =
   | LanguagesSection
   | CustomSection;
 
-export type ThemeId = "modern" | "classic" | "minimal" | "executive";
+export type ThemeId = "modern" | "classic" | "minimal" | "executive" | "ats";
 
 export type HeaderLayout = "banner" | "centered" | "sidebar-accent" | "compact";
 export type SectionTitleStyle = "underlined" | "boxed" | "side-bar" | "uppercase-plain";

@@ -1,5 +1,19 @@
 <section class="cv-section" style="margin-bottom: 0;">
   <h2 class="section-title">مهارت‌ها</h2>
+  {% if theme_config.id == "ats" %}
+  <div style="display: flex; flex-direction: column; gap: {{ theme_config.spacing.item_gap }}px;">
+    {% for group in section.groups %}
+    <div>
+      {% if group.label %}
+      <h3 style="font-size: 0.9em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 6px;">{{ group.label }}</h3>
+      {% endif %}
+      {% if group.items %}
+      <p style="font-size: 0.85em; color: {{ theme_config.colors.secondary }}; line-height: 1.6; margin: 0;">{{ group.items }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
   <div style="display: flex; flex-wrap: wrap; gap: {{ theme_config.spacing.item_gap }}px;">
     {% for group in section.groups %}
     <div style="flex: 1; min-width: 140px;">
@@ -12,4 +26,5 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 </section>

@@ -15,6 +15,8 @@ export function SkillsSection({ section }: Props) {
   const theme = useCVStore((s) => s.document.theme);
   const themeConfig = THEMES[theme];
 
+  const isAts = theme === "ats";
+
   const updateGroups = (groups: SkillGroup[]) => {
     updateSection(section.id, { groups });
   };
@@ -42,8 +44,8 @@ export function SkillsSection({ section }: Props) {
   return (
     <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.groups.map((group) => (
-        <div key={group.id} className="relative group flex items-start gap-3">
-          <div className="shrink-0 w-28">
+        <div key={group.id} className={`relative group flex gap-3 ${isAts ? "flex-col gap-1" : "items-start"}`}>
+          <div className={isAts ? "w-full" : "shrink-0 w-28"}>
             <EditableText
               value={group.label}
               onChange={(v) => updateGroup(group.id, { label: v })}
@@ -52,7 +54,7 @@ export function SkillsSection({ section }: Props) {
               direction="rtl"
             />
           </div>
-          <div className="flex-1">
+          <div className={isAts ? "w-full" : "flex-1"}>
             <EditableText
               value={group.items}
               onChange={(v) => updateGroup(group.id, { items: v })}
