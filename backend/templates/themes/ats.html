@@ -1,0 +1,125 @@
+{# ─────────────────────────────────────────────────────────────────────────────
+   ATS-Friendly Theme
+   Single-column, flat, no decorative elements. Optimized for ATS parsers.
+─────────────────────────────────────────────────────────────────────────────── #}
+
+{% macro theme_css(theme_config, accent_color) %}
+/* ── ATS Theme: Single-column, flat, no decoration ─────────────────── */
+
+#cv-preview {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: {{ theme_config.spacing.section_gap }}px;
+}
+
+/* Section titles: simple bold with thin bottom border */
+.section-title {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: {{ theme_config.colors.text }};
+  border-bottom: 1px solid {{ accent_color }};
+  padding-bottom: 4px;
+  margin-bottom: {{ theme_config.spacing.item_gap }}px;
+}
+
+/* Items: flat, no border/shadow/background */
+.cv-item {
+  padding: 6px 0;
+  border: none;
+  box-shadow: none;
+  background: none;
+}
+
+.cv-item + .cv-item {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+}
+
+/* Compact header */
+.cv-header-compact {
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid {{ theme_config.colors.text }};
+}
+
+.cv-header-compact .header-name {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: {{ theme_config.colors.text }};
+  margin-bottom: 2px;
+}
+
+.cv-header-compact .header-title {
+  font-size: 1.05em;
+  color: {{ theme_config.colors.text }};
+  margin-bottom: 6px;
+}
+
+.cv-header-compact .header-contact {
+  font-size: 0.9em;
+  color: {{ theme_config.colors.text }};
+  line-height: 1.5;
+}
+
+.cv-header-compact .header-contact span {
+  display: inline;
+}
+
+.cv-header-compact .header-contact span:not(:last-child)::after {
+  content: " | ";
+  color: {{ theme_config.colors.text }};
+}
+
+/* Links: plain, no color decoration */
+.cv-header-compact a,
+.cv-item a {
+  color: {{ theme_config.colors.text }};
+  text-decoration: none;
+}
+
+/* Bullets */
+.cv-item ul {
+  padding-right: 18px;
+  list-style: disc;
+}
+
+.cv-item ul li {
+  margin-bottom: 3px;
+  color: {{ theme_config.colors.text }};
+}
+
+/* Ensure no multi-column anywhere */
+.skills-grid,
+.languages-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+{% endmacro %}
+
+{% macro render_section_title(title, accent_color) %}
+<h2 class="section-title" style="font-size: 1.1em; font-weight: 700; color: {{ accent_color }}; border-bottom: 1px solid {{ accent_color }}; padding-bottom: 4px; margin-bottom: 10px;">{{ title }}</h2>
+{% endmacro %}
+
+{% macro render_item_wrapper() %}
+<div class="cv-item" style="padding: 6px 0; border: none; box-shadow: none; background: none;">
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro render_header(section, theme_config, accent_color) %}
+<div class="cv-header-compact">
+  <div class="header-name">{{ section.data.name }}</div>
+  {% if section.data.title %}
+    <div class="header-title">{{ section.data.title }}</div>
+  {% endif %}
+  <div class="header-contact">
+    {% if section.data.email %}<span>{{ section.data.email }}</span>{% endif %}
+    {% if section.data.phone %}<span>{{ section.data.phone }}</span>{% endif %}
+    {% if section.data.location %}<span>{{ section.data.location }}</span>{% endif %}
+    {% if section.data.linkedin %}<span>{{ section.data.linkedin }}</span>{% endif %}
+    {% if section.data.website %}<span>{{ section.data.website }}</span>{% endif %}
+  </div>
+</div>
+{% endmacro %}

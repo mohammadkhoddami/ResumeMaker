@@ -14,6 +14,8 @@
     {% import "themes/minimal.html" as theme %}
   {% elif theme_config.id == "executive" %}
     {% import "themes/executive.html" as theme %}
+  {% elif theme_config.id == "ats" %}
+    {% import "themes/ats.html" as theme %}
   {% endif %}
 
   <style>
@@ -102,6 +104,11 @@
 
     /* ── Section Break Control ──────────────────────────────────── */
     .cv-section {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .cv-item {
       break-inside: avoid;
       page-break-inside: avoid;
     }
