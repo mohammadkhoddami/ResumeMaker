@@ -9,7 +9,7 @@ from pydantic.alias_generators import to_camel
 # Literal type aliases
 # ---------------------------------------------------------------------------
 
-ThemeId = Literal["modern", "classic", "minimal", "executive"]
+ThemeId = Literal["modern", "classic", "minimal", "executive", "ats"]
 HeaderLayout = Literal["banner", "centered", "sidebar-accent", "compact"]
 SectionTitleStyle = Literal["underlined", "boxed", "side-bar", "uppercase-plain"]
 ItemCardStyle = Literal["bordered", "flat", "dotted-separator", "shadowed"]
@@ -272,5 +272,22 @@ ThemeConfigRegistry: dict[ThemeId, ThemeConfig] = {
         header_layout="sidebar-accent",
         section_title_style="side-bar",
         item_card_style="shadowed",
+    ),
+    "ats": ThemeConfig(
+        id="ats",
+        name="ATS-Friendly",
+        font_family="Vazirmatn, Tahoma, Arial, sans-serif",
+        heading_font="Vazirmatn, Tahoma, Arial, sans-serif",
+        spacing=ThemeSpacing(section_gap=20, item_gap=10),
+        colors=ThemeColors(
+            primary="#111827",
+            secondary="#374151",
+            background="#ffffff",
+            text="#111827",
+        ),
+        header_background=None,
+        header_layout="compact",
+        section_title_style="underlined",
+        item_card_style="flat",
     ),
 }

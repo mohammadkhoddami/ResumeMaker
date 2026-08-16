@@ -15,7 +15,8 @@ import type { CVDocument } from "../types/cv.types";
  */
 
 const BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+  "http://localhost:8000";
 
 export async function exportPdfViaApi(document: CVDocument): Promise<Blob> {
   const response = await fetch(`${BASE_URL}/api/export/pdf`, {
