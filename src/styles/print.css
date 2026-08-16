@@ -10,10 +10,11 @@
     font-synthesis: none;
   }
 
-  /* (e) Hide sidebar, action buttons, and drag/move/delete controls */
+  /* Hide sidebar, action buttons, drag/move/delete controls, and ATS guide */
   aside,
   .no-print,
-  .cv-action-btn {
+  .cv-action-btn,
+  .ats-guide-panel {
     display: none !important;
   }
 
@@ -49,13 +50,13 @@
     margin-bottom: 0;
   }
 
-  /* (b) Break-inside avoid on each section wrapper (direct children of content div) */
-  #cv-preview .relative.z-10 > div {
+  /* Break-inside avoid on individual item cards within sections */
+  #cv-preview .cv-section-spacing > *:last-child > * {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* (b) Keep headings attached to the content that follows */
+  /* Keep headings attached to the content that follows */
   #cv-preview h1,
   #cv-preview h2,
   #cv-preview h3 {
@@ -63,13 +64,19 @@
     page-break-after: avoid;
   }
 
-  /* (c) Prevent a section title from being orphaned at page bottom */
+  /* Prevent a section title from being orphaned at page bottom */
   #cv-preview h3 {
     break-before: avoid;
     page-break-before: avoid;
   }
 
-  /* (b) Orphan/widow control on text content */
+  /* Prevent page break between section title and its first content item */
+  #cv-preview .cv-section-spacing > *:first-child + * {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  /* Orphan/widow control on text content */
   #cv-preview p,
   #cv-preview li {
     orphans: 3;
