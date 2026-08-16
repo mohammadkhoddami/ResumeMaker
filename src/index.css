@@ -74,3 +74,17 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
+.ats-guide-panel {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.ats-guide-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ats-guide-panel::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 4px;
+}
+

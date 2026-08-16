@@ -3,6 +3,7 @@ import { ErrorBoundary } from "./components/layout/ErrorBoundary";
 import { Sidebar } from "./components/sidebar/Sidebar";
 import { CVPreview } from "./components/cv/CVPreview";
 import { ToastContainer } from "./components/ui/Toast";
+import { AtsGuide } from "./components/ui/AtsGuide";
 
 function AppLayout() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ function App() {
     <ErrorBoundary>
       <AppLayout />
       <ToastContainer />
+      <AtsGuide />
     </ErrorBoundary>
   );
 }
