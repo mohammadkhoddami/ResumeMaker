@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: {{ theme_config.spacing.section_gap }}px;
+  gap: 16px;
 }
 
 /* Section titles: simple bold with thin bottom border */
@@ -25,7 +25,7 @@
 
 /* Items: flat, no border/shadow/background */
 .cv-item {
-  padding: 6px 0;
+  padding: 4px 0;
   border: none;
   box-shadow: none;
   background: none;
@@ -33,13 +33,13 @@
 
 .cv-item + .cv-item {
   border-top: 1px solid #e5e7eb;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 /* Compact header */
 .cv-header-compact {
   text-align: center;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid {{ theme_config.colors.text }};
 }
 
@@ -71,6 +71,22 @@
   color: {{ theme_config.colors.text }};
 }
 
+.cv-header-compact .header-contact svg {
+  display: inline;
+  vertical-align: middle;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 2px;
+}
+
+.cv-header-compact .header-contact svg {
+  display: inline;
+  vertical-align: middle;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 2px;
+}
+
 /* Links: plain, no color decoration */
 .cv-header-compact a,
 .cv-item a {
@@ -99,7 +115,7 @@
 {% endmacro %}
 
 {% macro render_section_title(title, accent_color) %}
-<h2 class="section-title" style="font-size: 1.1em; font-weight: 700; color: {{ accent_color }}; border-bottom: 1px solid {{ accent_color }}; padding-bottom: 4px; margin-bottom: 10px;">{{ title }}</h2>
+<h2 class="section-title" style="font-size: 1.1em; font-weight: 700; color: {{ accent_color }}; border-bottom: 1px solid {{ accent_color }}; padding-bottom: 4px; margin-bottom: 8px;">{{ title }}</h2>
 {% endmacro %}
 
 {% macro render_item_wrapper() %}
