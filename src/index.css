@@ -74,6 +74,13 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
+/* ── PDF Export Styles ───────────────────────────────────────────── */
+.pdf-export .cv-action-btn,
+.pdf-export .no-print,
+.pdf-export [data-drag-handle] {
+  display: none !important;
+}
+
 .ats-guide-panel {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;

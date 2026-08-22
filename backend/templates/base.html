@@ -103,27 +103,26 @@
     }
 
     /* ── Section Break Control ──────────────────────────────────── */
-    .cv-item {
+    /* Allow breaks inside entries but prevent breaks in the middle of bullets */
+    .cv-item ul,
+    .cv-item ol {
       break-inside: avoid;
       page-break-inside: avoid;
     }
 
-    /* ── Heading Orphan/Widow Control ───────────────────────────── */
-    h1, h2, h3 {
+    /* Prevent section title from being orphaned at page bottom */
+    .section-title {
       break-after: avoid;
       page-break-after: avoid;
     }
 
-    h3 {
-      break-before: avoid;
-      page-break-before: avoid;
-    }
-
+    /* Prevent break between section title and its first content item */
     .section-title + * {
       break-before: avoid;
       page-break-before: avoid;
     }
 
+    /* Orphan/widow control on text content */
     p, li {
       orphans: 3;
       widows: 3;

@@ -5,7 +5,7 @@ import { useDragDrop } from "../../hooks/useDragDrop";
 import { SectionRenderer } from "./SectionRenderer";
 import { IconButton } from "../ui/IconButton";
 import { THEMES } from "../../utils/defaults";
-import { computePageBreaks } from "../../services/pdfExport";
+import { computePageBreaks, collectBreakBounds } from "../../services/pdfExport";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
@@ -40,18 +40,7 @@ export function CVPreview() {
     if (!el || !contentEl) return;
 
     const measure = () => {
-      const containerRect = el.getBoundingClientRect();
-      const sectionEls = Array.from(contentEl.children) as HTMLElement[];
-
-      const bounds = sectionEls.map((sec) => {
-        const rect = sec.getBoundingClientRect();
-        return {
-          top: rect.top - containerRect.top,
-          bottom: rect.bottom - containerRect.top,
-        };
-      });
-
-      setSectionBounds(bounds);
+      setSectionBounds(collectBreakBounds(contentEl, el));
       setTotalHeight(el.scrollHeight);
     };
 

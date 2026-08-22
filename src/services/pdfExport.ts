@@ -2,7 +2,6 @@ import type { CVDocument } from "../types/cv.types";
 import { validateCVDocument } from "./jsonValidation";
 
 const A4_WIDTH_MM = 210;
-const A4_HEIGHT_MM = 297;
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
 const CANVAS_SCALE = 1.5;
@@ -15,10 +14,12 @@ const CANVAS_SCALE = 1.5;
 export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
   await document.fonts.ready;
 
-  // Clone into an offscreen container so we don't mutate the live DOM
+  // Clone into an offscreen container that participates in layout
+  // visibility:hidden keeps it in flow but invisible; absolute positioning
+  // avoids affecting page scroll. This is more reliable than fixed+negative.
   const offscreen = document.createElement("div");
   offscreen.style.cssText =
-    "position:fixed;top:-99999px;left:-99999px;z-index:-1;pointer-events:none;";
+    "position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;";
   document.body.appendChild(offscreen);
 
   const clone = cvElement.cloneNode(true) as HTMLElement;
@@ -27,26 +28,15 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
   clone.style.minHeight = "auto";
   offscreen.appendChild(clone);
 
+  // Force layout recalculation in the offscreen container
+  clone.offsetHeight;
+
   try {
-    // Compute section boundaries relative to the clone container
-    const cloneRect = clone.getBoundingClientRect();
+    // Collect section + item-card boundaries relative to the clone container
     const contentEl = clone.querySelector(".relative.z-10") ?? clone;
-    const sectionEls = Array.from(contentEl.children) as HTMLElement[];
-
-    interface SectionBounds {
-      top: number;
-      bottom: number;
-    }
-
-    const bounds: SectionBounds[] = sectionEls.map((el) => {
-      const rect = el.getBoundingClientRect();
-      return {
-        top: rect.top - cloneRect.top,
-        bottom: rect.bottom - cloneRect.top,
-      };
-    });
 
     const totalHeight = clone.scrollHeight;
+    const bounds = collectBreakBounds(contentEl as HTMLElement, clone);
 
     // Smart pagination: find break points that prefer section boundaries
     const pageBreaks = computePageBreaks(bounds, totalHeight);
@@ -87,7 +77,6 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
       format: "a4",
     });
 
-    const sliceHeightPx = Math.round(A4_HEIGHT_PX * CANVAS_SCALE);
     const canvasWidth = jpegCanvas.width;
 
     let currentY = 0;
@@ -96,9 +85,10 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
     const maxSlicePx = A4_HEIGHT_PX * CANVAS_SCALE;
 
     while (currentY < totalHeight * CANVAS_SCALE) {
+      const nextBreakRaw = pageIndex < pageBreaks.length ? pageBreaks[pageIndex] : undefined;
       const nextBreakPx =
-        pageIndex < pageBreaks.length
-          ? Math.round(pageBreaks[pageIndex] * CANVAS_SCALE)
+        nextBreakRaw !== undefined
+          ? Math.round(nextBreakRaw * CANVAS_SCALE)
           : totalHeight * CANVAS_SCALE;
 
       const sliceTop = currentY;
@@ -141,31 +131,79 @@ export async function exportAsImagePDF(cvElement: HTMLElement): Promise<void> {
 }
 
 /**
+ * Collects break-point boundaries (relative to `reference.top`) for every
+ * top-level section wrapper AND every atomic item card inside sections.
+ * Item-level granularity keeps wasted page space below one card height.
+ */
+export function collectBreakBounds(
+  contentEl: HTMLElement,
+  reference: HTMLElement
+): { top: number; bottom: number }[] {
+  const refTop = reference.getBoundingClientRect().top;
+  const bounds: { top: number; bottom: number }[] = [];
+
+  const push = (el: Element) => {
+    const rect = el.getBoundingClientRect();
+    bounds.push({ top: rect.top - refTop, bottom: rect.bottom - refTop });
+  };
+
+  for (const section of Array.from(contentEl.children)) {
+    push(section);
+
+    // Atomic cards inside a section (children of the section body),
+    // excluding the "+ add item" action buttons.
+    const items = section.querySelectorAll<HTMLElement>(
+      ".cv-section-spacing > *:last-child > *"
+    );
+    for (const item of Array.from(items)) {
+      if (!item.classList.contains("cv-action-btn")) {
+        push(item);
+      }
+    }
+  }
+
+  return bounds;
+}
+
+/**
  * Computes optimal page-break Y positions (in px relative to clone top).
- * Prefers breaking between sections rather than mid-section.
+ * Cuts at the deepest safe boundary that fits on each page; boundaries are
+ * item-card bottoms, so wasted space never exceeds one card's height.
  */
 export function computePageBreaks(bounds: { top: number; bottom: number }[], totalHeight: number): number[] {
+  const candidates = Array.from(new Set(bounds.map((b) => Math.round(b.bottom))))
+    .filter((y) => y > 0 && y < totalHeight)
+    .sort((a, b) => a - b);
+
   const breaks: number[] = [];
+  let lastBreak = 0;
   let pageBottom = A4_HEIGHT_PX;
 
   while (pageBottom < totalHeight) {
-    // Find the best break point at or before pageBottom
-    let bestBreak = pageBottom;
+    let bestBreak = -1;
 
-    for (let i = bounds.length - 1; i >= 0; i--) {
-      const sectionBottom = bounds[i].bottom;
-      if (sectionBottom <= pageBottom && sectionBottom > pageBottom - A4_HEIGHT_PX * 0.4) {
-        bestBreak = sectionBottom;
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const candidate = candidates[i];
+      if (candidate !== undefined && candidate <= pageBottom) {
+        bestBreak = candidate;
         break;
       }
     }
 
+    // No boundary fits within this page (a single block is taller than the
+    // remaining space): hard-cut at the page edge so pagination terminates.
+    if (bestBreak === -1 || bestBreak <= lastBreak) {
+      bestBreak = pageBottom;
+    }
+
     breaks.push(bestBreak);
+    lastBreak = bestBreak;
     pageBottom = bestBreak + A4_HEIGHT_PX;
   }
 
   // Guard: remove the last break if it would produce a near-empty trailing page
-  if (breaks.length > 0 && totalHeight - breaks[breaks.length - 1] < 40) {
+  const finalBreak = breaks[breaks.length - 1];
+  if (finalBreak !== undefined && totalHeight - finalBreak < 40) {
     breaks.pop();
   }
 
