@@ -103,7 +103,15 @@
     }
 
     /* ── Section Break Control ──────────────────────────────────── */
-    /* Allow breaks inside entries but prevent breaks in the middle of bullets */
+    /* Keep each entry (cv-item) together on one page.
+       Browser will push to next page if it doesn't fit in remaining space. */
+    .cv-item {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* Fallback: if an entry is too tall for a page, at least keep
+       bullet lists together and protect the title area. */
     .cv-item ul,
     .cv-item ol {
       break-inside: avoid;
