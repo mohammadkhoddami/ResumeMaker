@@ -1,110 +1,179 @@
-# Persian CV Builder
+# Persian CV Builder - Resume Maker
 
-A modern, RTL-first CV/resume builder with real-time preview, cloud sync via Firebase, and PDF export.
+A modern Persian CV builder built with React, Vite, and FastAPI. This repository contains a CLI tool that allows you to run the entire application with a single command.
 
-## Tech Stack
+## Quick Start
 
-| Layer | Technology |
-|-------|-----------|
-| UI Framework | React 18 + TypeScript |
-| Build Tool | Vite 6 |
-| Styling | Tailwind CSS 3 + `@tailwindcss/typography` |
-| State Management | Zustand 5 |
-| Auth & Cloud Sync | Firebase 11 (Auth + Firestore) |
-| PDF Export | `jspdf` + `html2canvas` (image-based) or native browser print |
-| Utilities | `nanoid` for ID generation |
-
-## Directory Structure
-
-```
-src/
-├── components/
-│   ├── cv/              # CV preview & section renderers
-│   │   ├── CVPreview.tsx
-│   │   ├── SectionRenderer.tsx
-│   │   └── sections/    # Individual section components
-│   ├── layout/          # ErrorBoundary
-│   ├── sidebar/         # Editor sidebar panels
-│   └── ui/              # Shared UI primitives (Toast, buttons, etc.)
-├── hooks/               # useAuth, useCloudSync, useDragDrop
-├── services/            # Firebase, PDF export, JSON validation
-├── store/               # Zustand stores (cvStore, uiStore)
-├── styles/              # Print CSS
-├── types/               # TypeScript type definitions
-└── utils/               # Defaults, ID helpers
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 18
-- npm ≥ 9
-
-### Install & Run
+### Using the CLI
 
 ```bash
+npm run cli:dev
+```
+
+Or install globally:
+
+```bash
+npm install -g .
+
+resume-builder
+```
+
+Then use:
+
+```bash
+resume-builder start        # Start the application
+resume-builder doctor        # Run diagnostics
+resume-builder build         # Build the production version
+```
+
+## Features
+
+- ✨ Modern React + Vite frontend
+- 🎨 Beautiful Persian fonts (Vazirmatn)
+- 📄 Multiple resume templates (Modern, Minimal, Executive, Classic, ATS)
+- 🎯 PDF export with customizable sections
+- 🌐 Cross-platform support (Windows, macOS, Linux)
+- 🚀 One-command installation and startup
+
+## Project Structure
+
+```
+.
+├── cli/                          # CLI orchestration layer
+│   ├── bin/
+│   │   └── cli.js                # CLI entry point
+│   ├── src/
+│   │   ├── environment/          # Environment checks
+│   │   ├── logger/               # Logging utilities
+│   │   ├── manager.js            # CLI orchestration
+│   │   └── process/              # Process management
+│   └── package.json
+├── backend/                      # FastAPI application
+│   ├── main.py                   # API endpoints
+│   ├── config.py                 # Configuration
+│   ├── services/                 # PDF generation
+│   └── templates/                # Resume templates
+├── src/                          # React application
+│   ├── components/
+│   ├── hooks/
+│   ├── services/
+│   └── App.tsx
+├── package.json                  # Frontend dependencies
+└── vite.config.ts               # Vite configuration
+```
+
+## Development
+
+### Using the CLI
+
+```bash
+# Start development server
+npm run cli:dev
+
+# Build production version
+npm run cli:build
+
+# Run diagnostics
+npm run cli:doctor
+```
+
+### Traditional Development
+
+#### Backend
+
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate venv (Windows)
+venv\Scripts\activate
+
+# Activate venv (Mac/Linux)
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the backend
+python main.py
+```
+
+#### Frontend
+
+```bash
+cd frontend (or src)
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
-```
 
-The dev server starts at `http://localhost:5173`.
-
-### Configure Firebase
-
-1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
-2. Enable **Authentication** (Email/Password provider).
-3. Create a **Cloud Firestore** database.
-4. Copy `.env.example` → `.env` and fill in your Firebase config:
-
-```env
-VITE_FIREBASE_CONFIG='{"apiKey":"AIza...","authDomain":"my-app.firebaseapp.com","projectId":"my-app","storageBucket":"my-app.appspot.com","messagingSenderId":"123456","appId":"1:123:web:abc"}'
-```
-
-> All fields are required. The value must be a single-line JSON string wrapped in single quotes.
-
-### Build for Production
-
-```bash
+# Build for production
 npm run build
 ```
 
-Output is written to `dist/`. Preview the production build locally:
+## Environment
+
+### Required
+
+- Node.js 18+
+- Python 3.12+
+- npm 9+
+
+### Optional
+
+- Git
+
+## Troubleshooting
+
+### CLI Issues
+
+Run diagnostics:
 
 ```bash
-npm run preview
+npx @persian/resume-builder doctor
 ```
 
-### Lint
+### Port Already in Use
+
+Kill the existing process:
 
 ```bash
-npm run lint
+# Windows
+npx kill-port 8000 5173
+
+# Mac/Linux
+kill $(lsof -t -i:8000) $(lsof -t -i:5173)
 ```
 
-## PDF Export Methods
+### Dependencies Not Found
 
-### 1. Native Print (Recommended)
+Remove `node_modules` and install again:
 
-Uses the browser's built-in **Print → Save as PDF** dialog. Produces vector-quality text, selectable/searchable content, and correct page breaks. Triggered via the "Print" button in the Export panel.
+```bash
+rm -rf node_modules/
+npm install
+```
 
-- Styled with `src/styles/print.css` (`@media print` rules).
-- Respects A4 page size (`210mm × 297mm`) with proper margins.
+## Technology Stack
 
-### 2. Image-Based Export (html2canvas + jsPDF)
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Zustand state management
+- Firebase (authentication)
 
-Captures the CV preview as a raster image and embeds it in a PDF. Useful when the print dialog is unavailable (e.g., embedded WebViews).
-
-- **Pros**: Consistent rendering across environments.
-- **Cons**: Larger file size, non-selectable text, potential quality loss at zoom.
-
-## Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Type-check + production build |
-| `npm run preview` | Serve production build locally |
-| `npm run lint` | Run ESLint on all `.ts`/`.tsx` files |
+### Backend
+- FastAPI
+- Uvicorn
+- Playwright (PDF generation)
+- Pydantic
+- Jinja2
 
 ## License
 
