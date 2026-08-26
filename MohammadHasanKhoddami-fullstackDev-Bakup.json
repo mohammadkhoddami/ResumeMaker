@@ -1,0 +1,236 @@
+{
+  "sections": [
+    {
+      "id": "mRJImoCO6i",
+      "type": "header",
+      "data": {
+        "name": "محمد حسن خدامی",
+        "title": "Backend Developer",
+        "email": "mohammadh.khoddami@gmail.com",
+        "phone": "09916828797",
+        "location": "Tehran",
+        "linkedin": "https://mhkhoddami.ir",
+        "website": "www.linkedin.com/in/mohammad-hasan-khoddami-40528727a/"
+      }
+    },
+    {
+      "id": "SsaD1hGoa8",
+      "type": "summary",
+      "content": "توسعه‌دهنده نرم‌افزار با تجربه در پروژه‌های واقعی و تدریس. در کار بیشتر از صرفاً کدنویسی، روی حل مسئله، درک معماری و شناخت نیازهای کسب‌وکار تمرکز دارم و معتقدم یک راهکار خوب از فهم درست مسئله شروع می‌شود. تجربه کار تیمی و تدریس هم کمک کرده در همکاری با دیگران و یادگیری مداوم عملکرد بهتری داشته باشم."
+    },
+    {
+      "id": "s2t81PDPls",
+      "type": "skills",
+      "groups": [
+        {
+          "id": "AXE2ATmlLf",
+          "label": "Backend",
+          "items": "Python , Django, FastAPI, DRF"
+        },
+        {
+          "id": "4BKYmRA1kf",
+          "label": "Frontend",
+          "items": "React, TailwindCss, NextJs, Typescript"
+        },
+        {
+          "id": "pObkM1_2VN",
+          "label": "Database",
+          "items": "Postgresql, MongoDB, Redis, Myqsl"
+        },
+        {
+          "id": "aZIzZE64Ye",
+          "label": "Distributed Systems",
+          "items": "Celery, Kafka, RabbitMq"
+        }
+      ]
+    },
+    {
+      "id": "WxtEoDeQub",
+      "type": "experience",
+      "items": [
+        {
+          "id": "UkCcYeZec8",
+          "company": "آرسن",
+          "role": "توسعه دهنده Fullstack",
+          "period": "دی 1403 - تیر 1405",
+          "location": "تهران",
+          "bullets": [
+            "توسعه و نگهداری سرویس‌های Backend با Django و Django REST Framework",
+            "مشارکت در تحلیل نیازمندی‌ها و تصمیم‌گیری‌های فنی و معماری پروژه",
+            "توسعه رابط کاربری و قابلیت‌های Full-Stack با React و Next.js"
+          ]
+        },
+        {
+          "id": "DGKFc6LDUC",
+          "company": "VAT",
+          "role": "توسعه دهنده Backend",
+          "period": "خرداد 1403 - مرداد 1403",
+          "location": "Munich - Germany",
+          "bullets": [
+            "طراحی و توسعه یک Backend اختصاصی برای مدیریت و نگهداری Firmware سیستم‌های هوشمندسازی خودروهای اجاره‌ای با Django و Django REST Framework",
+            "همکاری مستقیم با کارفرمای آلمانی در تحلیل نیازمندی‌ها، توسعه و تحویل پروژه به‌صورت Remote",
+            "پیاده‌سازی فرآیند ثبت خودرو و مدیریت Firmware اختصاصی هر خودرو، شامل نگهداری نسخه‌ها و تولید Binary متناسب با پیکربندی آن"
+          ]
+        },
+        {
+          "id": "ZFe7oITE4o",
+          "company": "فراپردازش",
+          "role": "توسعه دهنده Backend",
+          "period": "مرداد 1403",
+          "location": "آبان 1403",
+          "bullets": [
+            "توسعه سرویس های Backend مبتنی بر Django",
+            "مشارکت در طراحی و پیاده سازی معماری Microservice",
+            "توسعه ی قابلیت های Real-time با استفاده از Kafka و Django Channels"
+          ]
+        },
+        {
+          "id": "8u8E_QKWbW",
+          "company": "باوان",
+          "role": "توسعه دهنده Backend",
+          "period": "بهمن 1402",
+          "location": "مرداد 1403",
+          "bullets": [
+            "توسعه Backend سامانه های سازمانی با استفاده DRF",
+            "استفاده از Celery و Redis برای پردازش وظایف پس زمینه و بهبود عملکرد سیستم"
+          ]
+        },
+        {
+          "id": "kxz3tdRdV4",
+          "company": "مجتمع فنی تهران",
+          "role": "مدرس Python, Django",
+          "period": "مهر 1403",
+          "location": "اردیبهشت 1404",
+          "bullets": [
+            "تدریس برنامه‌نویسی و الگوریتم‌های پیشرفته با Python",
+            "تدریس Django و توسعه Backend مبتنی بر پروژه‌های واقعی"
+          ]
+        },
+        {
+          "id": "IwIaNqnxCl",
+          "company": "مجتمع فنی تهران نمایندگی انقلاب",
+          "role": "مدرس Python, Django, DRF",
+          "period": "بهمن 1404 - اکنون",
+          "location": "تهران",
+          "bullets": [
+            "تدریس Python و Django از مقدماتی تا پیشرفته",
+            "آموزش معماری نرم‌افزار و الگوهای طراحی مدرن مانند CQRS و Clean Architecture با رویکرد عملی.",
+            "طراحی تمرین و پروژه و آماده‌سازی دانشجویان برای ورود به بازار کار در حوزه Backend."
+          ]
+        },
+        {
+          "id": "VCC8UMXtye",
+          "company": "دانشکار",
+          "role": "مدرس، منتور و تولید کننده ی محتوای آموزشی Python, Django",
+          "period": "فروردین 1405 - اکنون",
+          "location": "تهران",
+          "bullets": [
+            "تدریس Python، Django، Django REST Framework، Linux، Git و Docker با تمرکز بر مبانی معماری نرم‌افزار و الگوریتم‌ها برای بیش از 9 بوتکمپ",
+            "برگزاری جلسات Technical Mentoring و رفع اشکال تخصصی در حوزه برنامه‌نویسی و مهندسی نرم‌افزار.",
+            "طراحی و بررسی تمرین‌ها و پروژه‌های عملی، ارائه Code Review و آموزش مباحثی مانند Django، DRF و معماری نرم‌افزار.",
+            "طراحی و ضبط دوره جامع Python برای نوجوانان و جوانان، شامل بیش از ۲۰ پروژه عملی و آشنایی با حوزه‌های Python، Backend و AI، با هدف شناخت مسیرهای تخصصی و انتخاب مسیر شغلی مناسب."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "8e8JD1MKcB",
+      "type": "education",
+      "items": [
+        {
+          "id": "ce_G6nQune",
+          "institution": "آزاد یادگار، کارآفرینی جنت آباد",
+          "degree": "کاردانی مهندسی نرم افزار",
+          "period": "1403- 1405",
+          "gpa": "17"
+        },
+        {
+          "id": "-hT726eIrp",
+          "institution": "آزاد تهران شمال",
+          "degree": "لیسانس مترجمی زبان انگلیسی",
+          "period": "1398 - 1402",
+          "gpa": "17"
+        }
+      ]
+    },
+    {
+      "id": "0pQ6biBVGW",
+      "type": "projects",
+      "items": [
+        {
+          "id": "Xu5mI5Muga",
+          "name": "تمامی پروژه های opensource",
+          "link": "https://projectbro.ir",
+          "description": "ارتباط و همکاری افراد در پروژه‌های تیمی، با تمرکز بر معماری Backend و توسعه قابلیت‌های اصلی محصول.",
+          "tech": [
+            "Django Rest Framework",
+            "NextJs",
+            "Docker"
+          ]
+        },
+        {
+          "id": "zviNdD_ePV",
+          "name": "آی فرست",
+          "link": "https://ifrest.ir",
+          "description": "پیاده سازی هسته (آی فرست)، طراحی و توسعه سیستم یکپارچه ربان ادمین و توسعه داشبور و پنل مدیریت تحت وب برای پردازش های ربات",
+          "tech": [
+            "Pure Python",
+            "Django",
+            "Postgresql"
+          ]
+        },
+        {
+          "id": "eokPG_bVo3",
+          "name": "وب سایت آریو رضایی",
+          "link": "https://ariorezaei.ir",
+          "description": "توسعه ی Front & Backend",
+          "tech": [
+            "Django",
+            "AWS S3",
+            "Html css",
+            "Postgresql"
+          ]
+        },
+        {
+          "id": "DCf4hhJY_f",
+          "name": "تمامی پروژه های opensource",
+          "link": "https://github.com/mohammadkhoddami",
+          "description": "",
+          "tech": []
+        },
+        {
+          "id": "dSrxfDNXA6",
+          "name": "fastpyx",
+          "link": "/ https://pypi.org/project/fastpyx",
+          "description": "توسعه کتابخانه برای زبان پایتون در جهت بهینه سازی سرعت لیست ها",
+          "tech": [
+            "C"
+          ]
+        },
+        {
+          "id": "XbPRqnwaoL",
+          "name": "Resume Maker",
+          "link": "https://github.com/mohammadkhoddami/ResumeMaker",
+          "description": "یک پروژه open source مبتنی بر FastAPI و React برای ساخت رزومه",
+          "tech": [
+            "FastAPI",
+            "React",
+            "playwright"
+          ]
+        },
+        {
+          "id": "qKrdw_I5A-",
+          "name": "Markdownizer",
+          "link": "https://pypi.org/project/markdownizer/",
+          "description": "توسعه کتابخانه برای داکیومنت کردن کد های پایتون به مارکداون با استفاده از docstring و comments",
+          "tech": [
+            "Python"
+          ]
+        }
+      ]
+    }
+  ],
+  "theme": "ats",
+  "accentColor": "#2563eb",
+  "fontSize": 14
+}

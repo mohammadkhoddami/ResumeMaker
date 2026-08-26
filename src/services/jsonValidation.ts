@@ -1,6 +1,12 @@
-import type { CVDocument, ThemeId } from "../types/cv.types";
+import type { CVDocument, CVSection, SectionType, ThemeId } from "../types/cv.types";
+import { THEMES } from "../utils/defaults";
+import { generateId } from "../utils/id";
 
-const VALID_THEMES: readonly string[] = ["modern", "classic", "minimal", "executive"];
+const VALID_THEMES: readonly string[] = Object.keys(THEMES);
+
+const DEFAULT_THEME: ThemeId = "modern";
+const DEFAULT_ACCENT_COLOR = "#2563eb";
+const DEFAULT_FONT_SIZE = 14;
 
 export class ValidationError extends Error {
   constructor(
@@ -13,11 +19,152 @@ export class ValidationError extends Error {
 }
 
 function assertObject(data: unknown, field: string): asserts data is Record<string, unknown> {
-  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+  if (!isObject(data)) {
     throw new ValidationError(
       `Expected "${field}" to be an object, got ${data === null ? "null" : typeof data}`,
       field
     );
+  }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function asRecordArray(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.filter(isObject) : [];
+}
+
+function withId(item: Record<string, unknown>): { id: string } & Record<string, unknown> {
+  return {
+    id: typeof item.id === "string" && item.id.length > 0 ? item.id : generateId(),
+    ...item,
+  };
+}
+
+function normalizeSection(sectionObj: Record<string, unknown>): CVSection {
+  const id = typeof sectionObj.id === "string" && sectionObj.id.length > 0 ? sectionObj.id : generateId();
+  const type = sectionObj.type as SectionType;
+
+  switch (type) {
+    case "header": {
+      const data = isObject(sectionObj.data) ? sectionObj.data : {};
+      return {
+        id,
+        type: "header",
+        data: {
+          name: asString(data.name),
+          title: asString(data.title),
+          email: asString(data.email),
+          phone: asString(data.phone),
+          location: asString(data.location),
+          linkedin: asString(data.linkedin),
+          website: asString(data.website),
+        },
+      };
+    }
+    case "summary":
+    case "custom":
+      return { id, type, content: asString(sectionObj.content) } as CVSection;
+    case "experience":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            company: asString(normalized.company),
+            role: asString(normalized.role),
+            period: asString(normalized.period),
+            location: asString(normalized.location),
+            bullets: asStringArray(normalized.bullets),
+          };
+        }),
+      };
+    case "education":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            institution: asString(normalized.institution),
+            degree: asString(normalized.degree),
+            period: asString(normalized.period),
+            gpa: asString(normalized.gpa),
+          };
+        }),
+      };
+    case "skills":
+      return {
+        id,
+        type,
+        groups: asRecordArray(sectionObj.groups).map((group) => {
+          const normalized = withId(group);
+          return {
+            id: normalized.id,
+            label: asString(normalized.label),
+            items: asString(normalized.items),
+          };
+        }),
+      };
+    case "projects":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            name: asString(normalized.name),
+            link: asString(normalized.link),
+            description: asString(normalized.description),
+            tech: asStringArray(normalized.tech),
+          };
+        }),
+      };
+    case "certifications":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            name: asString(normalized.name),
+            issuer: asString(normalized.issuer),
+            date: asString(normalized.date),
+          };
+        }),
+      };
+    case "languages":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            name: asString(normalized.name),
+            level: asString(normalized.level),
+          };
+        }),
+      };
+    default:
+      // Unknown/legacy section types are preserved as-is; the renderer skips them safely.
+      return { ...sectionObj, id } as unknown as CVSection;
   }
 }
 
@@ -38,26 +185,25 @@ export function validateCVDocument(data: unknown): CVDocument {
   }
   for (let i = 0; i < obj.sections.length; i++) {
     const section = obj.sections[i];
-    if (section === null || typeof section !== "object" || Array.isArray(section)) {
+    if (!isObject(section)) {
       throw new ValidationError(
         `sections[${i}] must be an object`,
         `sections[${i}]`
       );
     }
-    const sectionObj = section as Record<string, unknown>;
-    if (!("id" in sectionObj)) {
+    if (!("id" in section)) {
       throw new ValidationError(
         `sections[${i}] is missing required field "id"`,
         `sections[${i}].id`
       );
     }
-    if (typeof sectionObj.id !== "string" || sectionObj.id.length === 0) {
+    if (typeof section.id !== "string" || section.id.length === 0) {
       throw new ValidationError(
-        `sections[${i}].id must be a non-empty string, got ${typeof sectionObj.id}`,
+        `sections[${i}].id must be a non-empty string, got ${typeof section.id}`,
         `sections[${i}].id`
       );
     }
-    if (!("type" in sectionObj)) {
+    if (!("type" in section)) {
       throw new ValidationError(
         `sections[${i}] is missing required field "type"`,
         `sections[${i}].type`
@@ -65,49 +211,34 @@ export function validateCVDocument(data: unknown): CVDocument {
     }
   }
 
-  // --- theme ---
-  if (!("theme" in obj)) {
-    throw new ValidationError('Missing required field "theme"', "theme");
-  }
-  if (typeof obj.theme !== "string") {
-    throw new ValidationError(
-      `"theme" must be a string, got ${typeof obj.theme}`,
-      "theme"
-    );
-  }
-  if (!VALID_THEMES.includes(obj.theme)) {
-    throw new ValidationError(
-      `"theme" must be one of [${VALID_THEMES.join(", ")}], got "${obj.theme}"`,
-      "theme"
-    );
+  // --- theme (optional, falls back to default for legacy/unknown values) ---
+  let theme: ThemeId = DEFAULT_THEME;
+  if ("theme" in obj && obj.theme !== null && obj.theme !== undefined) {
+    if (typeof obj.theme !== "string") {
+      throw new ValidationError(
+        `"theme" must be a string, got ${typeof obj.theme}`,
+        "theme"
+      );
+    }
+    theme = VALID_THEMES.includes(obj.theme) ? (obj.theme as ThemeId) : DEFAULT_THEME;
   }
 
-  // --- accentColor ---
-  if (!("accentColor" in obj)) {
-    throw new ValidationError('Missing required field "accentColor"', "accentColor");
-  }
-  if (typeof obj.accentColor !== "string") {
-    throw new ValidationError(
-      `"accentColor" must be a string, got ${typeof obj.accentColor}`,
-      "accentColor"
-    );
-  }
+  // --- accentColor (optional) ---
+  const accentColor =
+    typeof obj.accentColor === "string" ? obj.accentColor : DEFAULT_ACCENT_COLOR;
 
-  // --- fontSize ---
-  if (!("fontSize" in obj)) {
-    throw new ValidationError('Missing required field "fontSize"', "fontSize");
-  }
-  if (typeof obj.fontSize !== "number" || Number.isNaN(obj.fontSize)) {
-    throw new ValidationError(
-      `"fontSize" must be a finite number, got ${String(obj.fontSize)}`,
-      "fontSize"
-    );
-  }
+  // --- fontSize (optional) ---
+  const fontSize =
+    typeof obj.fontSize === "number" && Number.isFinite(obj.fontSize)
+      ? obj.fontSize
+      : DEFAULT_FONT_SIZE;
 
   return {
-    sections: obj.sections as CVDocument["sections"],
-    theme: obj.theme as ThemeId,
-    accentColor: obj.accentColor,
-    fontSize: obj.fontSize,
+    sections: obj.sections.map((section) =>
+      normalizeSection(section as Record<string, unknown>)
+    ),
+    theme,
+    accentColor,
+    fontSize,
   };
 }
