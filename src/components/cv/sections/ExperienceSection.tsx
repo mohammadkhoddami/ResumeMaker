@@ -116,7 +116,7 @@ export function ExperienceSection({ section }: Props) {
 
           <div className="space-y-1 mt-2">
             {item.bullets.map((bullet, bIdx) => (
-              <div key={bIdx} className="flex items-start gap-1.5 group/bullet">
+              <div key={bIdx} className="cv-subbreak flex items-start gap-1.5 group/bullet">
                 <span className="text-gray-400 text-xs mt-1 shrink-0">•</span>
                 <EditableText
                   value={bullet}

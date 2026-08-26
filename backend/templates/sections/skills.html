@@ -8,7 +8,11 @@
       <h3 style="font-size: 0.9em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 6px;">{{ group.label }}</h3>
       {% endif %}
       {% if group.items %}
-      <p style="font-size: 0.85em; color: {{ theme_config.colors.secondary }}; line-height: 1.6; margin: 0;">{{ group.items }}</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        {% for skill in group.items.split(',') if skill.strip() %}
+        <span style="font-size: 0.75em; background: #f1f5f9; color: {{ theme_config.colors.secondary }}; padding: 2px 8px; border-radius: 4px;">{{ skill.strip() }}</span>
+        {% endfor %}
+      </div>
       {% endif %}
     </div>
     {% endfor %}
@@ -21,7 +25,11 @@
       <h3 style="font-size: 0.9em; font-weight: 700; color: {{ theme_config.colors.text }}; margin-bottom: 6px;">{{ group.label }}</h3>
       {% endif %}
       {% if group.items %}
-      <p style="font-size: 0.85em; color: {{ theme_config.colors.secondary }}; line-height: 1.6; margin: 0;">{{ group.items }}</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        {% for skill in group.items.split(',') if skill.strip() %}
+        <span style="font-size: 0.75em; background: #f1f5f9; color: {{ theme_config.colors.secondary }}; padding: 2px 8px; border-radius: 4px;">{{ skill.strip() }}</span>
+        {% endfor %}
+      </div>
       {% endif %}
     </div>
     {% endfor %}

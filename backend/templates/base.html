@@ -50,9 +50,12 @@
     }
 
     /* ── Page & Print Setup ─────────────────────────────────────── */
+    /* Standard margins declared on @page so EVERY page of a multi-page
+       CV gets them (container padding only pads page 1). ATS-friendly.
+       Bottom is smaller than the top to reduce blank space at page end. */
     @page {
       size: A4;
-      margin: 0;
+      margin: 16mm 18mm 12mm 18mm;
     }
 
     * {
@@ -81,11 +84,14 @@
         print-color-adjust: exact;
       }
 
+      /* Margins come from @page; the container must not add its own
+         (would double-pad page 1 and overflow the printable area). */
       #cv-preview {
-        width: 210mm !important;
-        min-height: auto !important;
+        width: auto !important;
+        min-height: 0 !important;
         box-shadow: none !important;
         margin: 0 !important;
+        padding: 0 !important;
       }
 
       #cv-preview,
@@ -103,17 +109,22 @@
     }
 
     /* ── Section Break Control ──────────────────────────────────── */
-    /* Keep each entry (cv-item) together on one page.
-       Browser will push to next page if it doesn't fit in remaining space. */
+    /* Keep each entry (cv-item) together on one page when possible.
+       Long bullet lists MAY split between items so pages fill up and
+       don't leave large blank strips at the bottom (esp. page 1). */
     .cv-item {
       break-inside: avoid;
       page-break-inside: avoid;
     }
 
-    /* Fallback: if an entry is too tall for a page, at least keep
-       bullet lists together and protect the title area. */
+    /* Fallback: allow splitting between list items, never mid-item. */
     .cv-item ul,
     .cv-item ol {
+      break-inside: auto;
+      page-break-inside: auto;
+    }
+
+    .cv-item li {
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -146,7 +157,7 @@
   </style>
 </head>
 <body>
-  <div id="cv-preview" style="width: 210mm; min-height: 297mm; margin: 0 auto; background: {{ theme_config.colors.background }}; padding: 20mm 18mm;">
+  <div id="cv-preview" style="background: {{ theme_config.colors.background }};">
     {% for section in document.sections %}
       {% if section.type == "header" %}
         {% include "sections/header.html" %}
@@ -164,6 +175,8 @@
         {% include "sections/certifications.html" %}
       {% elif section.type == "languages" %}
         {% include "sections/languages.html" %}
+      {% elif section.type == "articles" %}
+        {% include "sections/articles.html" %}
       {% elif section.type == "custom" %}
         {% include "sections/custom.html" %}
       {% endif %}

@@ -11,6 +11,7 @@ import {
   createProjectsSection,
   createCertificationsSection,
   createLanguagesSection,
+  createArticlesSection,
   createCustomSection,
 } from "../utils/defaults";
 
@@ -23,6 +24,7 @@ const SECTION_FACTORIES: Record<SectionType, () => CVSection> = {
   projects: createProjectsSection,
   certifications: createCertificationsSection,
   languages: createLanguagesSection,
+  articles: createArticlesSection,
   custom: createCustomSection,
 };
 

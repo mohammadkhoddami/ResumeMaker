@@ -9,6 +9,8 @@ export interface EditableTextProps {
   className?: string;
   style?: React.CSSProperties;
   direction?: "ltr" | "rtl" | "auto";
+  /** "input" (default) fires onChange on every keystroke; "blur" only on blur/Enter. */
+  commitOn?: "input" | "blur";
 }
 
 export function EditableText({
@@ -20,6 +22,7 @@ export function EditableText({
   className,
   style,
   direction,
+  commitOn = "input",
 }: EditableTextProps) {
   const ref = useRef<HTMLElement>(null);
   const isFocusedRef = useRef(false);
@@ -50,10 +53,11 @@ export function EditableText({
   }, [onChange, value]);
 
   const handleInput = useCallback(() => {
+    if (commitOn === "blur") return;
     const el = ref.current;
     if (!el) return;
     onChange(el.innerText);
-  }, [onChange]);
+  }, [onChange, commitOn]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

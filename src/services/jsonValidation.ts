@@ -162,6 +162,20 @@ function normalizeSection(sectionObj: Record<string, unknown>): CVSection {
           };
         }),
       };
+    case "articles":
+      return {
+        id,
+        type,
+        items: asRecordArray(sectionObj.items).map((item) => {
+          const normalized = withId(item);
+          return {
+            id: normalized.id,
+            title: asString(normalized.title),
+            description: asString(normalized.description),
+            link: asString(normalized.link),
+          };
+        }),
+      };
     default:
       // Unknown/legacy section types are preserved as-is; the renderer skips them safely.
       return { ...sectionObj, id } as unknown as CVSection;

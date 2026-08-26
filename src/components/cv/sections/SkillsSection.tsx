@@ -1,9 +1,9 @@
-import React from "react";
 import { useCVStore } from "../../../store/cvStore";
 import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
 import { THEMES } from "../../../utils/defaults";
+import { SkillChips } from "../SkillChips";
 import type { SkillsSection as SkillsSectionData, SkillGroup } from "../../../types/cv.types";
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 
 export function SkillsSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
+  const accentColor = useCVStore((s) => s.document.accentColor);
   const theme = useCVStore((s) => s.document.theme);
   const themeConfig = THEMES[theme];
 
@@ -44,23 +45,35 @@ export function SkillsSection({ section }: Props) {
   return (
     <div className="cv-item" style={{ display: "flex", flexDirection: "column", gap: themeConfig.spacing.itemGap, color: themeConfig.colors.text }}>
       {section.groups.map((group) => (
-        <div key={group.id} className={`relative group flex gap-3 ${isAts ? "flex-col gap-1" : "items-start"}`}>
-          <div className={isAts ? "w-full" : "shrink-0 w-28"}>
-            <EditableText
-              value={group.label}
-              onChange={(v) => updateGroup(group.id, { label: v })}
-              placeholder="دسته‌بندی"
-              className="text-sm font-semibold text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
-              direction="rtl"
-            />
-          </div>
+        <div key={group.id} className={`relative group ${isAts ? "space-y-1" : "flex gap-3 items-start"}`}>
+          {!isAts && (
+            <div className="shrink-0 w-28 pt-0.5">
+              <EditableText
+                value={group.label}
+                onChange={(v) => updateGroup(group.id, { label: v })}
+                placeholder="دسته‌بندی"
+                className="text-sm font-semibold text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
+                direction="rtl"
+              />
+            </div>
+          )}
+          {isAts && (
+            <div className="w-full">
+              <EditableText
+                value={group.label}
+                onChange={(v) => updateGroup(group.id, { label: v })}
+                placeholder="دسته‌بندی"
+                className="text-sm font-semibold text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
+                direction="rtl"
+              />
+            </div>
+          )}
           <div className={isAts ? "w-full" : "flex-1"}>
-            <EditableText
+            <SkillChips
               value={group.items}
               onChange={(v) => updateGroup(group.id, { items: v })}
-              placeholder="مهارت‌ها (با کاما جدا کنید)"
-              className="text-sm text-gray-700 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 block"
-              direction="rtl"
+              accentColor={accentColor}
+              neutral={isAts}
             />
           </div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">

@@ -3,25 +3,22 @@ import { EditableText } from "../../ui/EditableText";
 import { IconButton } from "../../ui/IconButton";
 import { generateId } from "../../../utils/id";
 import { THEMES, getItemCardClasses } from "../../../utils/defaults";
-import { SkillChips } from "../SkillChips";
-import type { ProjectsSection as ProjectsSectionData, ProjectItem } from "../../../types/cv.types";
+import type { ArticlesSection as ArticlesSectionData, ArticleItem } from "../../../types/cv.types";
 
 interface Props {
-  section: ProjectsSectionData;
+  section: ArticlesSectionData;
 }
 
-export function ProjectsSection({ section }: Props) {
+export function ArticlesSection({ section }: Props) {
   const updateSection = useCVStore((s) => s.updateSection);
-  const accentColor = useCVStore((s) => s.document.accentColor);
   const theme = useCVStore((s) => s.document.theme);
   const themeConfig = THEMES[theme];
-  const isAts = theme === "ats";
 
-  const updateItems = (items: ProjectItem[]) => {
+  const updateItems = (items: ArticleItem[]) => {
     updateSection(section.id, { items });
   };
 
-  const updateItem = (itemId: string, patch: Partial<ProjectItem>) => {
+  const updateItem = (itemId: string, patch: Partial<ArticleItem>) => {
     const items = section.items.map((item) =>
       item.id === itemId ? { ...item, ...patch } : item
     );
@@ -29,12 +26,11 @@ export function ProjectsSection({ section }: Props) {
   };
 
   const addItem = () => {
-    const newItem: ProjectItem = {
+    const newItem: ArticleItem = {
       id: generateId(),
-      name: "",
-      link: "",
+      title: "",
       description: "",
-      tech: [],
+      link: "",
     };
     updateItems([...section.items, newItem]);
   };
@@ -49,7 +45,7 @@ export function ProjectsSection({ section }: Props) {
         <div key={item.id} className={`relative group space-y-2 ${getItemCardClasses(themeConfig.itemCardStyle)}`}>
           <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <IconButton
-              label="حذف پروژه"
+              label="حذف مقاله"
               onClick={() => removeItem(item.id)}
               size="sm"
             >
@@ -61,9 +57,9 @@ export function ProjectsSection({ section }: Props) {
 
           <div className="flex flex-wrap items-baseline gap-2">
             <EditableText
-              value={item.name}
-              onChange={(v) => updateItem(item.id, { name: v })}
-              placeholder="نام پروژه"
+              value={item.title}
+              onChange={(v) => updateItem(item.id, { title: v })}
+              placeholder="عنوان مقاله"
               className="font-semibold text-sm text-gray-900 outline-none focus:ring-1 focus:ring-blue-300 rounded px-1"
               direction="rtl"
             />
@@ -79,17 +75,10 @@ export function ProjectsSection({ section }: Props) {
           <EditableText
             value={item.description}
             onChange={(v) => updateItem(item.id, { description: v })}
-            placeholder="توضیح پروژه..."
+            placeholder="توضیح مقاله..."
             multiline
             className="cv-subbreak text-sm text-gray-700 block outline-none focus:ring-1 focus:ring-blue-300 rounded px-1 min-h-[2rem]"
             direction="rtl"
-          />
-
-          <SkillChips
-            value={item.tech.join(", ")}
-            onChange={(v) => updateItem(item.id, { tech: v.split(",").map((t) => t.trim()).filter(Boolean) })}
-            accentColor={accentColor}
-            neutral={isAts}
           />
         </div>
       ))}
@@ -99,7 +88,7 @@ export function ProjectsSection({ section }: Props) {
         onClick={addItem}
         className="cv-action-btn text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
-        + افزودن پروژه
+        + افزودن مقاله
       </button>
     </div>
   );

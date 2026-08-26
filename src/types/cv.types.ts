@@ -7,6 +7,7 @@ export type SectionType =
   | "projects"
   | "certifications"
   | "languages"
+  | "articles"
   | "custom";
 
 export interface HeaderData {
@@ -111,6 +112,19 @@ export interface LanguagesSection {
   items: LanguageItem[];
 }
 
+export interface ArticleItem {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+}
+
+export interface ArticlesSection {
+  id: string;
+  type: "articles";
+  items: ArticleItem[];
+}
+
 export interface CustomSection {
   id: string;
   type: "custom";
@@ -126,6 +140,7 @@ export type CVSection =
   | ProjectsSection
   | CertificationsSection
   | LanguagesSection
+  | ArticlesSection
   | CustomSection;
 
 export type ThemeId = "modern" | "classic" | "minimal" | "executive" | "ats";

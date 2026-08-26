@@ -12,6 +12,7 @@ import { SkillsSection } from "./sections/SkillsSection";
 import { ProjectsSection } from "./sections/ProjectsSection";
 import { CertificationsSection } from "./sections/CertificationsSection";
 import { LanguagesSection } from "./sections/LanguagesSection";
+import { ArticlesSection } from "./sections/ArticlesSection";
 import { CustomSection } from "./sections/CustomSection";
 
 interface SectionRendererProps {
@@ -27,6 +28,7 @@ const SECTION_COMPONENTS: Record<SectionType, React.ComponentType<{ section: any
   projects: ProjectsSection,
   certifications: CertificationsSection,
   languages: LanguagesSection,
+  articles: ArticlesSection,
   custom: CustomSection,
 };
 

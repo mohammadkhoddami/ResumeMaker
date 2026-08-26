@@ -133,6 +133,19 @@ class LanguagesSection(_Base):
     items: list[LanguageItem] = Field(default_factory=list)
 
 
+class ArticleItem(_Base):
+    id: str
+    title: str = ""
+    description: str = ""
+    link: str = ""
+
+
+class ArticlesSection(_Base):
+    id: str
+    type: Literal["articles"] = "articles"
+    items: list[ArticleItem] = Field(default_factory=list)
+
+
 class CustomSection(_Base):
     id: str
     type: Literal["custom"] = "custom"
@@ -153,6 +166,7 @@ CVSection = Annotated[
         ProjectsSection,
         CertificationsSection,
         LanguagesSection,
+        ArticlesSection,
         CustomSection,
     ],
     Field(discriminator="type"),

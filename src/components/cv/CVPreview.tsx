@@ -5,7 +5,7 @@ import { useDragDrop } from "../../hooks/useDragDrop";
 import { SectionRenderer } from "./SectionRenderer";
 import { IconButton } from "../ui/IconButton";
 import { THEMES } from "../../utils/defaults";
-import { computePageBreaks, collectBreakBounds } from "../../services/pdfExport";
+import { computePageBreaks, collectBreakBounds, type BreakBound } from "../../services/pdfExport";
 
 const A4_WIDTH_PX = 794;
 const A4_HEIGHT_PX = 1123;
@@ -32,7 +32,7 @@ export function CVPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [totalHeight, setTotalHeight] = useState(0);
-  const [sectionBounds, setSectionBounds] = useState<{ top: number; bottom: number }[]>([]);
+  const [sectionBounds, setSectionBounds] = useState<BreakBound[]>([]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -90,7 +90,7 @@ export function CVPreview() {
 
         <div
           ref={contentRef}
-          className="relative z-10 p-10 flex flex-col"
+          className="relative z-10 pt-[30px] px-10 pb-[20px] flex flex-col"
           style={{ gap: `${themeConfig.spacing.sectionGap}px` }}
         >
           {sections.map((section, index) => {

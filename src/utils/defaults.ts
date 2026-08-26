@@ -7,6 +7,7 @@ import {
   ProjectsSection,
   CertificationsSection,
   LanguagesSection,
+  ArticlesSection,
   CustomSection,
   SectionType,
   ThemeId,
@@ -132,6 +133,21 @@ export function createLanguagesSection(): LanguagesSection {
   };
 }
 
+export function createArticlesSection(): ArticlesSection {
+  return {
+    id: generateId(),
+    type: "articles",
+    items: [
+      {
+        id: generateId(),
+        title: "",
+        description: "",
+        link: "",
+      },
+    ],
+  };
+}
+
 export function createCustomSection(): CustomSection {
   return {
     id: generateId(),
@@ -149,6 +165,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   projects: "پروژه‌ها",
   certifications: "گواهینامه‌ها",
   languages: "زبان‌ها",
+  articles: "مقالات",
   custom: "بخش سفارشی",
 };
 
