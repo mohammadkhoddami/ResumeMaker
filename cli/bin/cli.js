@@ -4,79 +4,105 @@ import { Command } from "commander";
 import cliLogger from "../src/logger/index.js";
 import { EnvironmentChecker } from "../src/environment/index.js";
 import { CLIManager } from "../src/manager.js";
-import pkg from "../../package.json" with { type: "json" };
+import { readPackageInfo } from "../src/paths/index.js";
 
-const program = new Command();
+function ensureSupportedNode() {
+  const [major] = process.versions.node.split(".").map(Number);
+  if (major < 18) {
+    cliLogger.error(
+      `Node.js v${process.versions.node} is not supported. Please upgrade to Node.js 18 or newer.`
+    );
+    process.exit(1);
+  }
+}
 
-program
-  .name("resume-builder")
-  .description("Simple CLI tool for building Persian CVs")
-  .version(pkg.version || "1.0.0");
+async function main() {
+  ensureSupportedNode();
 
-program
-  .command("start")
-  .description("Start the application")
-  .option("--no-check", "Skip environment checks")
-  .option("--port <port>", "Override default port", "3000")
-  .action(async (options) => {
-    cliLogger.info("Starting Resume Builder...");
+  const pkg = readPackageInfo();
+  const program = new Command();
 
-    const environmentChecker = new EnvironmentChecker();
-    if (options.check !== false) {
-      cliLogger.info("Checking environment...");
-      const checks = await environmentChecker.run();
-      if (!checks.every((c) => c.success)) {
-        cliLogger.error("Environment check failed");
+  program
+    .name("resume-builder")
+    .description("One-command launcher for the Persian Resume Builder app")
+    .version(pkg.version ?? "0.0.0")
+    .option("-v, --verbose", "Show debug output", false);
+
+  program
+    .command("start", { isDefault: true })
+    .description("Start the application (default command)")
+    .option("--no-check", "Skip pre-flight environment checks")
+    .action(async (options) => {
+      const manager = new CLIManager();
+      await manager.start({ check: options.check !== false });
+    });
+
+  program
+    .command("doctor")
+    .description("Run diagnostics against the installed package")
+    .action(async () => {
+      cliLogger.info("Running diagnostics...\n");
+
+      const checker = new EnvironmentChecker();
+      const results = await checker.run();
+      const blockers = results.filter((r) => !r.ok && r.kind === "error");
+      const fixable = results.filter((r) => r.kind === "fixable");
+      const warnings = results.filter((r) => r.kind === "warn" || r.kind === "info");
+
+      for (const result of results) {
+        if (result.ok && result.kind !== "info") {
+          cliLogger.success(
+            `${result.name}${result.details ? `: ${result.details}` : ` – ${result.message}`}`
+          );
+        } else if (result.kind === "fixable") {
+          cliLogger.warn(`${result.name}: ${result.message} (fixed automatically on start)`);
+        } else if (result.kind === "warn" || result.kind === "info") {
+          cliLogger.warn(`${result.name}: ${result.message}`);
+        } else {
+          cliLogger.error(`${result.name}: ${result.message}`);
+        }
+        if (result.details && result.ok) cliLogger.muted(`    ${result.details}`);
+        if (result.hint && (!result.ok || result.kind === "warn")) {
+          for (const line of result.hint.split("\n")) cliLogger.muted(`    ${line}`);
+        }
+      }
+
+      console.log("");
+      cliLogger.info(`Diagnostics complete: ${results.length - blockers.length}/${results.length} checks passed`);
+
+      if (blockers.length > 0) {
+        cliLogger.error("Blocking problems found. Please resolve them and run doctor again.");
         process.exit(1);
       }
-    }
 
-    const manager = new CLIManager();
-    await manager.start({
-      checkEnv: options.check !== false,
-      port: parseInt(options.port, 10),
-    });
-
-    cliLogger.success("Application is ready!");
-  });
-
-program
-  .command("doctor")
-  .description("Run diagnostics")
-  .action(async () => {
-    cliLogger.info("Running diagnostics...\n");
-    const environmentChecker = new EnvironmentChecker();
-    const checks = await environmentChecker.run();
-    const passed = checks.filter((c) => c.success).length;
-    const total = checks.length;
-
-    checks.forEach((check) => {
-      if (check.success) {
-        cliLogger.success(`${check.name}: ${check.message}${check.details ? ` (${check.details})` : ""}`);
+      if (fixable.length > 0 || warnings.length > 0) {
+        cliLogger.info(
+          "Nothing is blocking you: 'resume-builder start' sets up everything automatically."
+        );
       } else {
-        cliLogger.error(`${check.name}: ${check.message}${check.details ? ` (${check.details})` : ""}`);
+        cliLogger.success("Everything looks good.");
       }
+      process.exit(0);
     });
 
-    cliLogger.info(`\nDiagnostics complete: ${passed}/${total} checks passed`);
+  program
+    .command("build")
+    .description("Build the production frontend bundle")
+    .action(async () => {
+      const manager = new CLIManager();
+      await manager.build();
+    });
 
-    if (passed === total) {
-      cliLogger.success("Everything looks good.");
-      process.exit(0);
-    } else {
-      cliLogger.error("Some checks failed. Please review the errors above.");
-      process.exit(1);
+  program.hook("preAction", () => {
+    if (program.opts().verbose) {
+      cliLogger.verbose = true;
     }
   });
 
-program
-  .command("build")
-  .description("Build the production version")
-  .action(async () => {
-    cliLogger.info("Building production version...");
-    const manager = new CLIManager();
-    await manager.build();
-    cliLogger.success("Build complete!");
-  });
+  await program.parseAsync(process.argv);
+}
 
-program.parse();
+main().catch((error) => {
+  cliLogger.error(error?.message ?? "An unexpected error occurred.");
+  process.exit(1);
+});

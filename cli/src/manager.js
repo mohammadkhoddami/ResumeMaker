@@ -1,241 +1,266 @@
 import cliLogger from "./logger/index.js";
-import { ProcessManager } from "./process/process-manager.js";
-import { EnvironmentChecker } from "./environment/index.js";
-import path from "path";
-import { fileURLToPath } from "url";
-import { spawn } from "child_process";
-import fs from "fs/promises";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { ProcessManager, findAvailablePort } from "./process/process-manager.js";
+import {
+  ensureApplicationSynced,
+  ensureBackendDependencies,
+  ensureFrontendDependencies,
+  ensurePlaywrightChromium,
+  frontendDepsInstalled,
+} from "./runtime/setup.js";
+import {
+  DEFAULT_BACKEND_PORT,
+  DEFAULT_FRONTEND_PORT,
+  readPackageInfo,
+  runtimeFrontendDir,
+} from "./paths/index.js";
+import path from "node:path";
+import { spawn } from "node:child_process";
 
 export class CLIManager {
   constructor() {
     this.processManager = new ProcessManager();
+    this.stopping = false;
+    this.keepAliveTimer = null;
+    const pkg = readPackageInfo();
+    this.version = pkg.version ?? "0.0.0";
   }
 
-  async start(options) {
+  async start({ check = true } = {}) {
     try {
       cliLogger.info("Starting Resume Builder...");
 
-      // Auto-setup: install dependencies if needed
-      await this.autoSetup();
+      if (check) {
+        cliLogger.info("Checking environment...");
+        const failed = await this.runCriticalChecks();
+        if (failed) process.exit(1);
+      }
 
-      cliLogger.info("Preparing application...");
+      await this.registerLifecycleHandlers();
+
+      await this.prepareRuntime();
+
+      const backendTarget = await this.selectPort(DEFAULT_BACKEND_PORT, "backend");
+      const frontendTarget = await this.selectPort(DEFAULT_FRONTEND_PORT, "frontend");
+
       cliLogger.info("Starting backend...");
-
-      await this.processManager.startBackend();
+      await this.processManager.startBackend({
+        venvPython: this.venvPython,
+        port: backendTarget.port,
+      });
+      cliLogger.success(`Backend ready at http://localhost:${backendTarget.port}`);
 
       cliLogger.info("Starting frontend...");
-
-      const frontendPort = 5173;
-      await this.processManager.startFrontend(frontendPort);
-
-      // Auto-open browser
-      await this.openBrowser(frontendPort);
-
-      this.processManager.on("exit", () => {
-        cliLogger.info("\nApplication shutting down...");
-        this.processManager.cleanup();
+      await this.processManager.startFrontend({
+        port: frontendTarget.port,
+        apiPort: backendTarget.port,
       });
+      cliLogger.success(`Frontend ready at http://localhost:${frontendTarget.port}`);
 
-      // Handle graceful shutdown
-      const shutdown = () => {
-        cliLogger.info("\nShutting down...");
-        this.processManager.cleanup();
-        process.exit(0);
-      };
-      process.on("SIGINT", shutdown);
-      process.on("SIGTERM", shutdown);
+      console.log("");
+      cliLogger.success("Application is ready!");
+      console.log("");
+      console.log(`  UI:  http://localhost:${frontendTarget.port}`);
+      console.log(`  API: http://localhost:${backendTarget.port}`);
+      console.log("");
 
-      cliLogger.info("\n\nApplication is ready!");
-      cliLogger.info(`  UI: http://localhost:${frontendPort}`);
-      cliLogger.info("");
-      cliLogger.info("Press Ctrl+C to stop");
+      cliLogger.info("Opening browser...");
+      this.openBrowser(`http://localhost:${frontendTarget.port}`);
+
+      console.log("");
+      cliLogger.info("Press Ctrl+C to stop.");
+
+      this.startKeepAlive();
     } catch (error) {
-      cliLogger.error("Failed to start application:", error);
-      this.processManager.cleanup();
-      process.exit(1);
+      this.reportFatalError(error);
     }
   }
 
-  async autoSetup() {
-    cliLogger.info("Setting up environment...");
+  async runCriticalChecks() {
+    return new Promise((resolve) => {
+      import("./environment/index.js").then(async ({ EnvironmentChecker }) => {
+        const checker = new EnvironmentChecker();
+        const results = await checker.runCritical();
+        let blocking = false;
 
-    // Check and install Node.js dependencies
-    await this.ensureNodeDependencies();
-
-    // Check and install Python dependencies
-    await this.ensurePythonDependencies();
-
-    // Install Playwright browsers
-    await this.ensurePlaywrightBrowsers();
-  }
-
-  async ensureNodeDependencies() {
-    const projectRoot = path.join(__dirname, "..", "..");
-    const frontendDir = path.join(projectRoot, "src");
-    const nodeModulesPath = path.join(frontendDir, "node_modules/.vite");
-
-    try {
-      await fs.access(nodeModulesPath);
-      cliLogger.success("Frontend dependencies already installed");
-    } catch {
-      cliLogger.info("Installing frontend dependencies...");
-      await this.runCommand("npm", ["install"], frontendDir);
-      cliLogger.success("Frontend dependencies installed");
-    }
-  }
-
-  async ensurePythonDependencies() {
-    const projectRoot = path.join(__dirname, "..", "..");
-    const backendDir = path.join(projectRoot, "backend");
-    const requirementsPath = path.join(backendDir, "requirements.txt");
-
-    cliLogger.info("Installing Python dependencies...");
-
-    // Try to use the venv python, fallback to system python
-    const pythonExecutable = this.getPythonExecutable();
-    const pipArgs = [pythonExecutable, "-m", "pip", "install", "-r", requirementsPath];
-
-    await this.runCommand(pipArgs[0], pipArgs.slice(1), backendDir);
-    cliLogger.success("Python dependencies installed");
-  }
-
-  async ensurePlaywrightBrowsers() {
-    const projectRoot = path.join(__dirname, "..", "..");
-    const backendDir = path.join(projectRoot, "backend");
-    const pythonExecutable = this.getPythonExecutable();
-
-    cliLogger.info("Installing Playwright browsers...");
-
-    try {
-      await this.runCommand(pythonExecutable, ["-m", "playwright", "install", "chromium"], backendDir);
-      cliLogger.success("Playwright browsers installed");
-    } catch (error) {
-      cliLogger.warn("Playwright browser installation may have failed, but continuing...");
-    }
-  }
-
-  async openBrowser(port) {
-    const url = `http://localhost:${port}`;
-
-    cliLogger.info("Opening browser...");
-
-    try {
-      if (process.platform === "win32") {
-        // Use shell: true for start command on Windows
-        await this.runCommand("cmd", ["/c", "start", "" , url], process.cwd());
-      } else if (process.platform === "darwin") {
-        await this.runCommand("open", [url], process.cwd());
-      } else {
-        await this.runCommand("xdg-open", [url], process.cwd());
-      }
-      cliLogger.success("Browser opened");
-    } catch (error) {
-      cliLogger.warn("Could not open browser automatically. Please open manually.");
-    }
-  }
-
-  getPythonExecutable() {
-    const platform = process.platform;
-
-    if (platform === "win32") {
-      const candidates = [
-        process.env.PYTHON,
-        "python",
-        "py",
-        "python3",
-        "C:/Users/Niklaus/AppData/Local/Programs/Python/Python314/python.exe",
-        "C:/Users/Niklaus/AppData/Local/Programs/Python/Python313/python.exe",
-        "C:/Users/Niklaus/AppData/Local/Programs/Python/Python312/python.exe",
-        "C:/Python314/python.exe",
-        "C:/Python313/python.exe",
-        "C:/Python312/python.exe",
-        "C:/Python39/python.exe",
-      ];
-
-      for (const candidate of candidates) {
-        if (candidate !== undefined && candidate !== null && candidate !== "") {
-          return candidate;
+        for (const result of results) {
+          if (result.ok) {
+            cliLogger.success(`${result.name}${result.details ? `: ${result.details}` : ""}`);
+          } else {
+            cliLogger.error(result.message);
+            if (result.hint) cliLogger.muted(result.hint);
+            blocking = true;
+          }
         }
-      }
 
-      return "python";
-    }
-
-    return process.env.PYTHON || "python3";
-  }
-
-  async runCommand(command, args, cwd) {
-    // On Windows, npm might need shell: true
-    const isWindows = process.platform === "win32";
-    let resolvedCommand = command;
-    let resolvedArgs = args;
-    let useShell = false;
-
-    if (isWindows) {
-      if (command === "npm") {
-        resolvedCommand = "npm.cmd";
-        useShell = true;
-      } else if (command === "cmd") {
-        useShell = true;
-      } else if (command === "py" || command === "python" || command === "python3") {
-        useShell = true;
-      }
-    }
-
-    return new Promise((resolve, reject) => {
-      const childProcess = spawn(resolvedCommand, resolvedArgs, {
-        cwd,
-        stdio: ["ignore", "pipe", "pipe"],
-        env: process.env,
-        shell: useShell,
-      });
-
-      let stdout = "";
-      let stderr = "";
-
-      childProcess.stdout?.on("data", (data) => {
-        stdout += data.toString();
-      });
-
-      childProcess.stderr?.on("data", (data) => {
-        stderr += data.toString();
-      });
-
-      childProcess.on("close", (code) => {
-        if (code === 0) {
-          resolve({ stdout, stderr });
-        } else {
-          reject(new Error(`Command failed with code ${code}: ${stderr || stdout}`));
-        }
-      });
-
-      childProcess.on("error", (error) => {
-        reject(error);
+        resolve(blocking);
       });
     });
   }
 
+  async prepareRuntime() {
+    cliLogger.info("Preparing application...");
+
+    await ensureApplicationSynced(this.version, {
+      force: process.env.RESUME_BUILDER_FORCE_SYNC === "1",
+    });
+
+    if (await frontendDepsInstalled()) {
+      cliLogger.debug("Frontend dependencies already installed");
+    } else {
+      await ensureFrontendDependencies();
+    }
+    cliLogger.success("Frontend ready");
+
+    const { EnvironmentChecker } = await import("./environment/index.js");
+    const python = await new EnvironmentChecker().requirePython();
+
+    const { venvPython } = await ensureBackendDependencies({ python });
+    cliLogger.success("Backend ready");
+    this.venvPython = venvPython;
+
+    await ensurePlaywrightChromium(venvPython);
+  }
+
+  async selectPort(preferred, label) {
+    const { port, preferredBusy } = await findAvailablePort(preferred);
+    if (preferredBusy) {
+      cliLogger.info(`${label === "backend" ? "Backend" : "Frontend"} port ${preferred} is in use. Using ${port}.`);
+    }
+    return { port };
+  }
+
+  openBrowser(url) {
+    try {
+      if (process.platform === "win32") {
+        spawn("cmd", ["/c", "start", "", url], {
+          detached: true,
+          windowsHide: true,
+          stdio: "ignore",
+        }).unref?.();
+      } else if (process.platform === "darwin") {
+        spawn("open", [url], { detached: true, stdio: "ignore" }).unref?.();
+      } else {
+        spawn("xdg-open", [url], { detached: true, stdio: "ignore" }).unref?.();
+      }
+    } catch {
+      cliLogger.warn(`Could not open the browser automatically. Open ${url} manually.`);
+    }
+  }
+
+  startKeepAlive() {
+    if (!this.keepAliveTimer) {
+      this.keepAliveTimer = setInterval(() => {}, 30000);
+    }
+  }
+
+  async registerLifecycleHandlers() {
+    this.processManager.on("serviceExited", ({ name, code, tail }) => {
+      if (this.stopping) return;
+      cliLogger.error(`[${name}] exited unexpectedly (exit code ${code}).`);
+      for (const line of tail) cliLogger.muted(`  │ ${line}`);
+      this.shutdown(1);
+    });
+
+    this.processManager.on("serviceError", ({ name, error }) => {
+      cliLogger.error(`[${name}] failed to start: ${error.message}`);
+    });
+
+    const shutdown = () => {
+      void this.shutdown(0);
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+    process.on("SIGHUP", shutdown);
+
+    process.on("exit", () => {
+      for (const [, entry] of this.processManager.services) {
+        try {
+          if (process.platform === "win32") {
+            spawnSync("taskkill", ["/pid", String(entry.proc.pid), "/T", "/F"], {
+              windowsHide: true,
+            });
+          } else {
+            try {
+              process.kill(-entry.proc.pid, "SIGKILL");
+            } catch {
+              /* already dead */
+            }
+          }
+        } catch {
+          /* already dead */
+        }
+      }
+    });
+  }
+
+  async shutdown(exitCode = 0) {
+    if (this.stopping) return;
+    this.stopping = true;
+
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
+
+    cliLogger.info("Stopping Resume Builder...");
+    const stopped = await this.processManager.stopAll();
+
+    if (stopped.includes("frontend")) cliLogger.success("Frontend stopped");
+    if (stopped.includes("backend")) cliLogger.success("Backend stopped");
+
+    cliLogger.success("Resume Builder stopped");
+    process.exit(exitCode);
+  }
+
+  reportFatalError(error) {
+    console.log("");
+    cliLogger.error(error.message || "An unexpected error occurred.");
+
+    if (error.kind === "python-missing") {
+      cliLogger.muted(
+        "\nResume Builder requires Python 3.12 or newer.\nPlease install Python and make sure it is available in PATH,\nthen run the CLI again."
+      );
+    }
+
+    if (error.tail?.length) {
+      cliLogger.muted("\nLast output:");
+      for (const line of error.tail) cliLogger.muted(`  │ ${line}`);
+    }
+
+    if (error.suggestion) {
+      cliLogger.muted(`\nSuggestion: ${error.suggestion}`);
+    }
+
+    if (!error.kind && !error.tail && !error.suggestion && error.stack) {
+      cliLogger.muted(error.stack.split("\n").slice(1, 3).join("\n"));
+    }
+
+    void this.processManager.stopAll().finally(() => process.exit(1));
+  }
+
   async build() {
     try {
-      cliLogger.info("Building frontend...");
+      await this.prepareRuntime();
 
-      await this.processManager.buildFrontend();
+      const viteEntry = path.join(runtimeFrontendDir, "node_modules", "vite", "bin", "vite.js");
 
-      cliLogger.info("Copying backend assets...");
+      cliLogger.info("Building production frontend...");
+      const { runProcess } = await import("./runtime/setup.js");
+      const result = await runProcess(process.execPath, [viteEntry, "build"], {
+        cwd: runtimeFrontendDir,
+        timeoutMs: 15 * 60 * 1000,
+      });
 
-      await this.processManager.copyBackendAssets();
+      if (result.code !== 0) {
+        const error = new Error("Frontend build failed.");
+        error.tail = result.lines.slice(-15);
+        throw error;
+      }
 
-      cliLogger.info("Checking built files...");
-
-      await this.processManager.validateBuild();
-
-      cliLogger.success("Build complete!");
+      cliLogger.success(`Build complete! Output: ${path.join(runtimeFrontendDir, "dist")}`);
     } catch (error) {
-      cliLogger.error("Build failed:", error);
-      process.exit(1);
+      this.reportFatalError(error);
     }
   }
 }

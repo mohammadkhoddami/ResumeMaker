@@ -1,12 +1,17 @@
 {
-  "name": "@persian/resume-builder",
+  "name": "@mohammadhkhoddami/resume-builder",
   "version": "1.0.0",
-  "description": "Simple CLI tool for building Persian CVs",
+  "description": "One-command launcher for the Persian Resume Builder app (React + Vite frontend, FastAPI backend)",
   "type": "module",
   "bin": {
     "resume-builder": "./bin/cli.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "prepack": "node scripts/prepare-package.js",
+    "package": "npm run prepack && npm pack",
     "cli": "node ./bin/cli.js",
     "start": "node ./bin/cli.js start",
     "doctor": "node ./bin/cli.js doctor",
@@ -15,16 +20,19 @@
   },
   "files": [
     "bin",
-    "src"
+    "src",
+    "scripts",
+    "app",
+    "README.md"
   ],
   "keywords": [
-    "resum-builder",
+    "resume-builder",
     "cli",
     "cv",
     "persian",
     "resume"
   ],
-  "author": "",
+  "author": "Mohammad Hossein Khoddami",
   "license": "MIT",
   "dependencies": {
     "commander": "^12.1.0",

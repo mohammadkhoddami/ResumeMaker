@@ -1,280 +1,354 @@
-import cliLogger from "../logger/index.js";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs/promises";
-import http from "http";
-import { spawn } from "child_process";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import net from "node:net";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import {
+  packagedBackendDir,
+  packagedFrontendDir,
+  DEFAULT_BACKEND_PORT,
+  DEFAULT_FRONTEND_PORT,
+  runtimeRoot,
+  runtimeVenvDir,
+  pathExists,
+} from "../paths/index.js";
+import { findPython } from "./python.js";
+import {
+  backendPackagesInstalled,
+  frontendDepsInstalled,
+  getVenvPythonPath,
+  playwrightChromiumReady,
+} from "../runtime/setup.js";
 
 class CheckResult {
-  constructor(name, success, message, details) {
+  constructor({ name, ok = false, kind = "error", message, details, hint }) {
     this.name = name;
-    this.success = success;
+    this.ok = ok;
+    this.kind = kind;
     this.message = message;
     this.details = details;
+    this.hint = hint;
   }
 }
 
+function spawnCapture(command, args, { shell = false, timeoutMs = 20000 } = {}) {
+  return new Promise((resolve) => {
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+
+    const timer = setTimeout(() => finish(null), timeoutMs);
+
+    let child;
+    try {
+      child = spawn(command, args, { shell, windowsHide: true });
+    } catch {
+      finish(null);
+      return;
+    }
+
+    child.stdout?.on("data", (chunk) => (stdout += chunk.toString()));
+    child.stderr?.on("data", (chunk) => (stderr += chunk.toString()));
+    child.on("error", () => finish(null));
+    child.on("close", (code) =>
+      finish(code === 0 ? { stdout: stdout.trim(), stderr: stderr.trim() } : null)
+    );
+  });
+}
+
+async function isPortBusy(port) {
+  return new Promise((resolve) => {
+    const socket = net.connect({ port, host: "127.0.0.1" });
+    socket.setTimeout(700);
+    socket.on("connect", () => {
+      socket.destroy();
+      resolve(true);
+    });
+    const giveUp = () => {
+      socket.destroy();
+      resolve(false);
+    };
+    socket.on("timeout", giveUp);
+    socket.on("error", giveUp);
+  });
+}
+
+const BACKEND_REQUIRED_FILES = ["main.py", "config.py", "logging_config.py", "requirements.txt"];
+const BACKEND_REQUIRED_DIRS = ["models", "services", "templates", "static"];
+const FRONTEND_REQUIRED_FILES = [
+  "package.json",
+  "index.html",
+  "vite.config.ts",
+  "tailwind.config.ts",
+  "postcss.config.js",
+  "tsconfig.json",
+];
+const FRONTEND_REQUIRED_DIRS = ["src"];
+const REQUIRED_FONTS = ["Vazirmatn-Regular.woff2", "Vazirmatn-Bold.woff2"];
+
 export class EnvironmentChecker {
+  async runCritical() {
+    return Promise.all([
+      this.checkNode(),
+      this.checkNpm(),
+      this.checkPython(),
+      this.checkBackendFiles(),
+      this.checkFrontendFiles(),
+    ]);
+  }
+
   async run() {
-    const checks = [];
-
-    checks.push(...await this.checkNode());
-    checks.push(...await this.checkPython());
-    checks.push(...await this.checkNodeModules());
-    checks.push(...await this.checkPythonPackages());
-    checks.push(...await this.checkPorts(8000));
-    checks.push(...await this.checkPorts(5173));
-    checks.push(...await this.checkBackendDirectory());
-    checks.push(...await this.checkFrontendDirectory());
-    checks.push(...await this.checkRequiredFiles());
-
-    return checks;
+    const results = await Promise.all([
+      this.checkNode(),
+      this.checkNpm(),
+      this.checkPython(),
+      this.checkBackendFiles(),
+      this.checkFrontendFiles(),
+      this.checkFonts(),
+      this.checkFrontendDependencies(),
+      this.checkBackendDependencies(),
+      this.checkPlaywright(),
+      this.checkPort(DEFAULT_BACKEND_PORT),
+      this.checkPort(DEFAULT_FRONTEND_PORT),
+    ]);
+    return results.flat();
   }
 
   async checkNode() {
-    const result = new CheckResult("Node.js", false);
-
-    try {
-      const version = await this.spawn("node", ["--version"]);
-
-      result.success = true;
-      result.message = "Node.js installed";
-      result.details = version.stdout.trim();
-    } catch (error) {
-      result.message = "Node.js not found";
-      result.details = error.message || "Unknown error";
+    const [major] = process.versions.node.split(".").map(Number);
+    if (major >= 18) {
+      return new CheckResult({
+        name: "Node.js",
+        ok: true,
+        kind: "ok",
+        details: `v${process.versions.node}`,
+        message: "Node.js is installed",
+      });
     }
+    return new CheckResult({
+      name: "Node.js",
+      ok: false,
+      kind: "error",
+      message: `Node.js v${process.versions.node} is too old`,
+      hint: "Resume Builder requires Node.js 18 or newer.",
+    });
+  }
 
-    return [result];
+  async checkNpm() {
+    const result = await spawnCapture("npm", ["--version"], {
+      shell: process.platform === "win32",
+    });
+    if (result) {
+      return new CheckResult({
+        name: "npm",
+        ok: true,
+        kind: "ok",
+        details: result.stdout,
+        message: "npm is installed",
+      });
+    }
+    return new CheckResult({
+      name: "npm",
+      ok: false,
+      kind: "error",
+      message: "npm was not found",
+      hint: "Please install Node.js 18+ (npm ships with it).",
+    });
   }
 
   async checkPython() {
-    const result = new CheckResult("Python", false);
-
-    const pyCommand = [
-      process.platform === "win32" ? "py" : "python3",
-      "--version"
-    ];
-
     try {
-      const { stdout } = await this.spawn(pyCommand[0], pyCommand.slice(1));
-
-      const versionLine = stdout.trim();
-
-      if (!versionLine.match(/^Python\s+(\d+\.\d+\.\d+)/)) {
-        const match = versionLine.match(/Python\s+(\d+)\.(\d+)\.(\d+)/);
-        if (match) {
-          const major = parseInt(match[1], 10);
-          const minor = parseInt(match[2], 10);
-
-          if (major === 3 && minor >= 12) {
-            result.success = true;
-            result.message = "Python 3.12+ installed";
-            result.details = versionLine;
-          } else {
-            result.message = "Python version too old";
-            result.details = versionLine;
-          }
-        } else {
-          result.success = true;
-          result.message = "Python installed";
-          result.details = versionLine;
-        }
-      } else {
-        result.success = true;
-        result.message = "Python installed";
-        result.details = versionLine;
-      }
-    } catch (error) {
-      result.message = "Python not found";
-      result.details = error.message || "Unknown error";
-    }
-
-    return [result];
-  }
-
-  async checkNodeModules() {
-    const result = new CheckResult("Node Dependencies", false);
-
-    const frontendDir = path.join(__dirname, "..", "..", "..", "src");
-    const nodeModulesPath = path.join(frontendDir, "node_modules/.vite");
-
-    try {
-      await fs.access(nodeModulesPath);
-      result.success = true;
-      result.message = "Frontend dependencies installed";
-      result.details = "node_modules/.vite exists";
+      const python = await findPython();
+      return new CheckResult({
+        name: "Python",
+        ok: true,
+        kind: "ok",
+        message: "Python is installed",
+        details: python.version,
+      });
     } catch {
-      result.message = "Frontend dependencies not installed";
-      result.details = "Run the CLI to install dependencies";
-    }
-
-    return [result];
-  }
-
-  async checkPythonPackages() {
-    const result = new CheckResult("Python Packages", false);
-
-    const backendDir = path.join(__dirname, "..", "..", "..", "backend");
-    const venvPath = path.join(backendDir, "venv");
-
-    try {
-      await fs.access(venvPath);
-      const pyExecutable = process.platform === "win32" ? "py" : "python3";
-      const { stdout } = await this.spawn(pyExecutable, ["-m", "pip", "list", "--format=json"]);
-
-      const packages = stdout.trim().slice(0, 100);
-      result.success = true;
-      result.message = "Python packages available";
-      result.details = "virtual environment found";
-    } catch (error) {
-      result.message = "Python packages not ready";
-      result.details = "Backend may need dependency installation";
-    }
-
-    return [result];
-  }
-
-  async checkPorts(...ports) {
-    const results = [];
-
-    for (const port of ports) {
-      const result = new CheckResult(`Port ${port}`, false);
-
-      await new Promise((resolve) => {
-        const req = http.get(`http://127.0.0.1:${port}/health`, (res) => {
-          res.resume();
-          // Any response means port is in use
-          result.success = false;
-          result.message = `Port ${port} is in use`;
-          resolve();
-        });
-
-        req.on("error", (error) => {
-          if (error.code === "ECONNREFUSED" || error.code === "ETIMEDOUT") {
-            result.success = true;
-            result.message = `Port ${port} is available`;
-            result.details = "Server not running";
-          } else {
-            result.success = false;
-            result.message = `Port ${port} check failed`;
-            result.details = error.message;
-          }
-          resolve();
-        });
-
-        req.setTimeout(100, () => {
-          req.destroy();
-          result.success = true;
-          result.message = `Port ${port} is available`;
-          result.details = "Connection timeout (likely available)";
-          resolve();
-        });
+      return new CheckResult({
+        name: "Python",
+        ok: false,
+        kind: "error",
+        message: "Python 3.12+ was not found",
+        hint:
+          "Resume Builder requires Python 3.12 or newer.\nPlease install Python and make sure it is available in PATH.",
       });
-
-      results.push(result);
     }
-
-    return results;
   }
 
-  async checkBackendDirectory() {
-    const result = new CheckResult("Backend Directory", false);
-
-    const backendDir = path.join(__dirname, "..", "..", "..", "backend");
-
-    try {
-      await fs.access(backendDir);
-      await fs.access(path.join(backendDir, "main.py"));
-      result.success = true;
-      result.message = "Backend directory found";
-      result.details = "main.py exists";
-    } catch (error) {
-      result.message = "Backend directory missing";
-      result.details = error.message || "Unknown error";
-    }
-
-    return [result];
+  async requirePython() {
+    return findPython();
   }
 
-  async checkFrontendDirectory() {
-    const result = new CheckResult("Frontend Directory", false);
+  async checkBackendFiles() {
+    const missing = [];
 
-    const projectRoot = path.join(__dirname, "..", "..", "..");
-    const frontendDir = path.join(projectRoot, "src");
-
-    try {
-      await fs.access(frontendDir);
-      await fs.access(path.join(projectRoot, "package.json"));
-      result.success = true;
-      result.message = "Frontend directory found";
-      result.details = "package.json exists in project root";
-    } catch (error) {
-      result.message = "Frontend directory missing";
-      result.details = error.message || "Unknown error";
+    for (const file of BACKEND_REQUIRED_FILES) {
+      if (!(await pathExists(path.join(packagedBackendDir, file)))) missing.push(file);
+    }
+    for (const dir of BACKEND_REQUIRED_DIRS) {
+      if (!(await pathExists(path.join(packagedBackendDir, dir)))) missing.push(`${dir}/`);
     }
 
-    return [result];
+    if (missing.length === 0) {
+      return new CheckResult({
+        name: "Backend files",
+        ok: true,
+        kind: "ok",
+        message: "Backend application files found",
+      });
+    }
+    return new CheckResult({
+      name: "Backend files",
+      ok: false,
+      kind: "error",
+      message: "Backend application files are missing",
+      details: `missing: ${missing.join(", ")}`,
+      hint: "The package appears to be incomplete. Please reinstall it or report this issue.",
+    });
   }
 
-  async checkRequiredFiles() {
-    const results = [];
+  async checkFrontendFiles() {
+    const missing = [];
 
-    const fontFiles = [
-      "Vazirmatn-Regular.woff2",
-      "Vazirmatn-Bold.woff2",
-    ];
-
-    const backendDir = path.join(__dirname, "..", "..", "..", "backend");
-    const fontsDir = path.join(backendDir, "static", "fonts");
-
-    for (const fontFile of fontFiles) {
-      const result = new CheckResult(`Font: ${fontFile}`, false);
-
-      try {
-        await fs.access(path.join(fontsDir, fontFile));
-        result.success = true;
-        result.message = "Font file found";
-      } catch (error) {
-        result.message = "Font file missing";
-        result.details = "Will use system fonts";
-      }
-
-      results.push(result);
+    for (const file of FRONTEND_REQUIRED_FILES) {
+      if (!(await pathExists(path.join(packagedFrontendDir, file)))) missing.push(file);
+    }
+    for (const dir of FRONTEND_REQUIRED_DIRS) {
+      if (!(await pathExists(path.join(packagedFrontendDir, dir)))) missing.push(`${dir}/`);
     }
 
-    return results;
+    if (missing.length === 0) {
+      return new CheckResult({
+        name: "Frontend files",
+        ok: true,
+        kind: "ok",
+        message: "Frontend application files found",
+      });
+    }
+    return new CheckResult({
+      name: "Frontend files",
+      ok: false,
+      kind: "error",
+      message: "Frontend application files are missing",
+      details: `missing: ${missing.join(", ")}`,
+      hint: "The package appears to be incomplete. Please reinstall it or report this issue.",
+    });
   }
 
-  async spawn(executable, args) {
-    return new Promise((resolve, reject) => {
-      const childProcess = spawn(executable, args);
+  async checkFonts() {
+    const fontsDir = path.join(packagedBackendDir, "static", "fonts");
+    const missing = [];
+    for (const font of REQUIRED_FONTS) {
+      if (!(await pathExists(path.join(fontsDir, font)))) missing.push(font);
+    }
 
-      let stdout = "";
-      let stderr = "";
-
-      childProcess.stdout.on("data", (data) => {
-        stdout += data.toString();
+    if (missing.length === 0) {
+      return new CheckResult({
+        name: "Fonts",
+        ok: true,
+        kind: "ok",
+        message: "Required fonts found",
       });
+    }
+    return new CheckResult({
+      name: "Fonts",
+      ok: false,
+      kind: "warn",
+      message: `Font files missing (${missing.join(", ")})`,
+      hint: "PDF export will fall back to system fonts. The app still works.",
+    });
+  }
 
-      childProcess.stderr.on("data", (data) => {
-        stderr += data.toString();
+  async checkFrontendDependencies() {
+    if (await frontendDepsInstalled()) {
+      return new CheckResult({
+        name: "Frontend dependencies",
+        ok: true,
+        kind: "ok",
+        message: "Installed",
       });
+    }
+    return new CheckResult({
+      name: "Frontend dependencies",
+      ok: false,
+      kind: "fixable",
+      message: "Not installed yet",
+      hint: "They are installed automatically the first time you run the CLI.",
+    });
+  }
 
-      childProcess.on("close", (code) => {
-        if (code === 0) {
-          resolve({ stdout, stderr });
-        } else {
-          reject(new Error(`Process exited with code ${code}`));
-        }
+  async checkBackendDependencies() {
+    if (await backendPackagesInstalled()) {
+      return new CheckResult({
+        name: "Python dependencies",
+        ok: true,
+        kind: "ok",
+        message: "Installed",
+        details: runtimeVenvDir,
       });
+    }
+    return new CheckResult({
+      name: "Python dependencies",
+      ok: false,
+      kind: "fixable",
+      message: "Not installed yet",
+      hint: `A virtual environment is created automatically at ${runtimeRoot} on first start.`,
+    });
+  }
 
-      childProcess.on("error", (error) => {
-        reject(error);
+  async checkPlaywright() {
+    const venvPython = getVenvPythonPath();
+    if (!(await pathExists(venvPython))) {
+      return new CheckResult({
+        name: "Chromium (PDF export)",
+        ok: false,
+        kind: "fixable",
+        message: "Not checked yet",
+        hint: "Downloaded automatically on first start.",
       });
+    }
+
+    const ready = await playwrightChromiumReady(venvPython);
+    if (ready === true) {
+      return new CheckResult({
+        name: "Chromium (PDF export)",
+        ok: true,
+        kind: "ok",
+        message: "Installed",
+      });
+    }
+    return new CheckResult({
+      name: "Chromium (PDF export)",
+      ok: ready === false ? false : true,
+      kind: "fixable",
+      message: ready === false ? "Not installed yet" : "Status unknown",
+      hint: "It is downloaded automatically on first start; PDF export needs it.",
+    });
+  }
+
+  async checkPort(port) {
+    const busy = await isPortBusy(port);
+    if (!busy) {
+      return new CheckResult({
+        name: `Port ${port}`,
+        ok: true,
+        kind: "ok",
+        message: "Available",
+      });
+    }
+    return new CheckResult({
+      name: `Port ${port}`,
+      ok: true,
+      kind: "info",
+      message: "In use – another free port will be chosen automatically",
     });
   }
 }

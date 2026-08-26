@@ -1,171 +1,100 @@
 # Resume Builder CLI
 
-A simple, installable CLI tool for building Persian CVs without manual setup.
+One command. Everything else is automatic.
 
-## Installation
+The CLI packages the complete Persian Resume Builder application — a React/Vite frontend and a FastAPI backend — and runs it on your machine with zero manual setup.
 
-### via npm (npx)
+## Quick Start
 
 ```bash
-npx @persian/resume-builder
+npx @mohammadhkhoddami/resume-builder
 ```
 
-### via npm (global)
+That's it. On first run the CLI will:
+
+1. Check your environment (Node.js, Python, npm, ports)
+2. Copy the application into a per-user runtime directory (`~/.resume-builder`)
+3. Install frontend dependencies (`npm install`)
+4. Create a Python virtual environment and install backend dependencies
+5. Download the Chromium browser used for PDF export (one time)
+6. Start FastAPI (default port `8000`) and Vite (default port `5173`)
+7. Pick a free port automatically if a default one is busy
+8. Open the app in your default browser
+
+Subsequent starts skip every already-completed step, so they launch in seconds.
+
+## Global Installation
 
 ```bash
-npm install -g @persian/resume-builder
+npm install -g @mohammadhkhoddami/resume-builder
 resume-builder
 ```
 
-## Usage
+## Commands
 
-### Start the Application
+| Command | Description |
+| --- | --- |
+| `resume-builder` | Start the application (same as `start`) |
+| `resume-builder start` | Start backend + frontend and open the browser |
+| `resume-builder doctor` | Diagnose the installation and environment |
+| `resume-builder build` | Build the production frontend bundle |
+| `resume-builder --version` | Show the CLI version |
 
-```bash
-npx @persian/resume-builder start
-```
+Options for `start`:
 
-This will:
-- Check your environment (Node.js, Python, dependencies)
-- Start the FastAPI backend
-- Start the React/Vite frontend
-- Open the application in your browser
+| Flag | Description |
+| --- | --- |
+| `--no-check` | Skip pre-flight environment checks |
+| `-v, --verbose` | Show debug output |
 
-### Run Diagnostics
-
-```bash
-npx @persian/resume-builder doctor
-```
-
-This checks:
-- Node.js installation
-- Python installation and version
-- Frontend dependencies
-- Backend Python packages
-- Available ports for the application
-- Required files
-- Fonts
-
-### Build Production Version
-
-```bash
-npx @persian/resume-builder build
-```
-
-Builds the frontend and copies backend assets to the `build/` directory.
-
-## What Happens Under the Hood
-
-The CLI orchestrates:
-
-1. **Environment Check**: Validates Node.js and Python presence and versions
-2. **Backend Startup**: Starts FastAPI on port 8000
-3. **Frontend Startup**: Starts Vite development server on port 5173
-
-No manual virtual environments, no manual dependency installation, no separate startup commands.
-
-## User Experience
-
-```
-npx @persian/resume-builder
-
-ℹ Starting Resume Builder...
-
-ℹ Checking environment...
-✓ Node.js
-✓ Python 3.14
-✓ Frontend dependencies installed
-✓ Python packages available
-✓ Port 8000 available
-✓ Port 5173 available
-✓ Backend directory found
-✓ Frontend directory found
-
-ℹ Preparing application...
-ℹ Starting backend...
-[backend] INFO: Uvicorn running on http://0.0.0.0:8000
-
-ℹ Starting frontend...
-  VITE v6.0.5  ready in XXX ms
-
-➜  Local:   http://localhost:5173/
-➜  Network: use --host to expose
-
-
-Application is ready!
-  UI: http://localhost:3000
-
-Press Ctrl+C to stop
-```
+Press `Ctrl+C` to stop. The CLI shuts down both services and their child processes cleanly — no orphaned servers left behind.
 
 ## Requirements
 
-- Node.js 18+
-- Python 3.12+
-- npm 9+
+- **Node.js 18+** (includes npm 9+)
+- **Python 3.12+** available in `PATH`
+- Internet access on first run (dependency downloads)
+
+The CLI detects `python`, `python3`, and the Windows `py` launcher automatically.
+
+## What the CLI manages for you
+
+- **Full application bundled**: the npm package ships with both the FastAPI backend and the React/Vite frontend inside `app/`
+- **Runtime isolation**: the working copy of the app lives in `~/.resume-builder/app`; the installed npm package is never modified
+- **Automatic installs**: frontend `npm install` and backend `pip install -r requirements.txt` run only when needed
+- **Virtual environments**: a shared venv is maintained at `~/.resume-builder/venv`
+- **Port management**: if `8000` or `5173` are occupied, the next free ports are chosen and reported; the frontend receives the real API port automatically
+- **Health checks**: startup completes only when `/health` responds on the backend and the Vite port accepts connections
+- **Crash handling**: if either service dies unexpectedly, the other is stopped and the error output is shown
 
 ## Troubleshooting
 
-### Python not found
-
-The CLI automatically detects Python using system PATH. Ensure Python is installed and in your PATH.
-
-### Dependencies not found
-
-Run `npx @persian/resume-builder doctor` to check your environment.
-
-### Port already in use
-
-Kill the existing process using the port, or the CLI will automatically use an available port.
-
-### Frontend not starting
-
-Check that `node_modules/.vite` exists. If missing, run the CLI and it will automatically install dependencies.
-
-## Architecture
-
-The CLI acts as an orchestration layer:
-
-```
-                    Resume Builder CLI
-                     │
-          ┌──────────┴──────────┐
-          │                     │
-     Backend Process       Frontend Process
-          │                     │
-       FastAPI                Vite/React
-```
-
-The CLI manages:
-- Process lifecycle (start, stop, restart)
-- Environment validation
-- Dependency management
-- Error handling
-
-## Development
-
-### Structure
-
-```
-cli/
-├── bin/
-│   └── cli.js              # CLI entry point
-├── src/
-│   ├── commands/          # Command handlers
-│   ├── process/           # Process management
-│   ├── environment/       # Environment checks
-│   ├── logger/           # Logging utilities
-│   └── manager.js        # CLI orchestration
-└── package.json
-```
-
-### Local Testing
+Run diagnostics:
 
 ```bash
-cd cli
-npm run dev
+resume-builder doctor
 ```
 
-## License
+Common fixes:
 
-MIT
+- **Reset the runtime** (removes the venv and installed dependencies; they reinstall on next start):
+  ```bash
+  rm -rf ~/.resume-builder   # Windows: delete %USERPROFILE%\.resume-builder
+  ```
+- **Force a fresh copy of the app files** after modifying the package:
+  ```bash
+  RESUME_BUILDER_FORCE_SYNC=1 resume-builder start
+  ```
+- **Python not found**: install Python 3.12+ from [python.org](https://www.python.org/downloads/) and ensure it is in `PATH`
+- **PDF export fails**: Chromium may be missing; delete `~/.resume-builder` and start again so it re-downloads
+
+## For maintainers: building the package
+
+The published package embeds the whole application. From `cli/`:
+
+```bash
+npm run prepack   # copies backend/, frontend sources and fonts into cli/app/
+npm pack          # produces @mohammadhkhoddami/resume-builder-<version>.tgz
+```
+
+`prepack` runs automatically before `npm pack` and `npm publish`. It copies only runtime-relevant sources (no `node_modules`, `.venv`, `__pycache__`, `dist`, logs) and downloads the two required Vazirmatn fonts into `app/backend/static/fonts` if they are not present locally.
