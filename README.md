@@ -4,26 +4,48 @@ A modern Persian CV builder built with React, Vite, and FastAPI. This repository
 
 ## Quick Start
 
-### Using the CLI
+### Run with npx (no install)
 
 ```bash
-npm run cli:dev
+npx @mohammadhkhoddami/resume-builder
 ```
 
-Or install globally:
+That single command:
+
+1. Checks Node.js, Python 3.12+, npm, and required files
+2. Copies the app to `~/.resume-builder` and installs dependencies on first run
+3. Starts the FastAPI backend on `http://localhost:8000`
+4. Starts the Vite frontend on `http://localhost:5173`
+5. Opens the app in your browser and keeps the terminal attached (blocked) until you press `Ctrl+C`
+
+`start` is the default command, so `npx @mohammadhkhoddami/resume-builder` is the same as
+`npx @mohammadhkhoddami/resume-builder start`. If ports 8000/5173 are busy, free ports are chosen automatically.
+
+> Note: the npm package is scoped as `@mohammadhkhoddami/resume-builder`. The bare name
+> `resume-maker` is already taken on npm by an unrelated package, so `npx resume-maker` will
+> not run this project.
+
+### Run from a clone (development)
 
 ```bash
-npm install -g .
+npm install          # install frontend dependencies
+npm run cli:dev      # runs: node cli/bin/cli.js start
+```
 
+### Install globally
+
+```bash
+cd cli
+npm install -g .
 resume-builder
 ```
 
-Then use:
+### CLI commands
 
 ```bash
-resume-builder start        # Start the application
-resume-builder doctor        # Run diagnostics
-resume-builder build         # Build the production version
+resume-builder start        # Start the application (default)
+resume-builder doctor       # Run diagnostics
+resume-builder build        # Build the production frontend bundle
 ```
 
 ## Features
@@ -134,7 +156,7 @@ npm run build
 Run diagnostics:
 
 ```bash
-npx @persian/resume-builder doctor
+npx @mohammadhkhoddami/resume-builder doctor
 ```
 
 ### Port Already in Use

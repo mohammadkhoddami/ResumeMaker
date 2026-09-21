@@ -14,7 +14,7 @@ import {
   runtimeFrontendDir,
 } from "./paths/index.js";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 export class CLIManager {
   constructor() {

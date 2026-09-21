@@ -214,7 +214,7 @@ resume-builder
 
 ### npx Usage
 ```bash
-npx @persian/resume-builder start
+npx @mohammadhkhoddami/resume-builder start
 ```
 
 ## Deployment
@@ -227,7 +227,7 @@ npm publish
 
 Users can then install with:
 ```bash
-npx @persian/resume-builder
+npx @mohammadhkhoddami/resume-builder
 ```
 
 ## Success Metrics
