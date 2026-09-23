@@ -1,6 +1,6 @@
 {
   "name": "@mohammadhkhoddami/resume-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "One-command launcher for the Persian Resume Builder app (React + Vite frontend, FastAPI backend)",
   "type": "module",
   "bin": {
