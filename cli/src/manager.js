@@ -219,7 +219,7 @@ export class CLIManager {
 
     if (error.kind === "python-missing") {
       cliLogger.muted(
-        "\nResume Builder requires Python 3.12 or newer.\nPlease install Python and make sure it is available in PATH,\nthen run the CLI again."
+        "\nResume Builder requires Python 3.12 or newer (3.13 and 3.14 are supported).\nPlease install Python and make sure it is available in PATH,\nthen run the CLI again."
       );
     }
 

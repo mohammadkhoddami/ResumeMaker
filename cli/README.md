@@ -52,7 +52,7 @@ Press `Ctrl+C` to stop. The CLI shuts down both services and their child process
 ## Requirements
 
 - **Node.js 18+** (includes npm 9+)
-- **Python 3.12+** available in `PATH`
+- **Python 3.12 or newer** available in `PATH` (3.13 and 3.14 are supported; versioned binaries such as `python3.13` are detected automatically)
 - Internet access on first run (dependency downloads)
 
 The CLI detects `python`, `python3`, and the Windows `py` launcher automatically.
@@ -85,7 +85,7 @@ Common fixes:
   ```bash
   RESUME_BUILDER_FORCE_SYNC=1 resume-builder start
   ```
-- **Python not found**: install Python 3.12+ from [python.org](https://www.python.org/downloads/) and ensure it is in `PATH`
+- **Python not found**: install Python 3.12 or newer (3.13/3.14 work) from [python.org](https://www.python.org/downloads/) and ensure it is in `PATH`
 - **PDF export fails**: Chromium may be missing; delete `~/.resume-builder` and start again so it re-downloads
 
 ## For maintainers: building the package

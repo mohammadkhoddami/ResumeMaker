@@ -5,7 +5,7 @@ export const MIN_PYTHON_MINOR = 12;
 
 let detectionPromise = null;
 
-function probe(executable) {
+function probe(command, args = ["--version"]) {
   return new Promise((resolve) => {
     let settled = false;
     let output = "";
@@ -21,7 +21,7 @@ function probe(executable) {
 
     let child;
     try {
-      child = spawn(executable, ["--version"], { shell: false, windowsHide: true });
+      child = spawn(command, args, { shell: false, windowsHide: true });
     } catch {
       finish(null);
       return;
@@ -55,19 +55,48 @@ function satisfies(version) {
   return version.major === MIN_PYTHON_MAJOR && version.minor >= MIN_PYTHON_MINOR;
 }
 
+function buildCandidates() {
+  const isWindows = process.platform === "win32";
+  const versionedNames = ["3.14", "3.13", "3.12"];
+
+  const raw = [
+    process.env.PYTHON && { command: process.env.PYTHON },
+    { command: "python" },
+    { command: "python3" },
+    ...(isWindows
+      ? [
+          { command: "py" },
+          ...versionedNames.map((version) => ({ command: "py", args: [`-${version}`] })),
+        ]
+      : versionedNames.map((version) => ({ command: `python${version}` }))),
+  ].filter(Boolean);
+
+  const seen = new Set();
+  return raw
+    .map(({ command, args }) => ({
+      command,
+      args: [...(args ?? []), "--version"],
+      label: [command, ...(args ?? [])].join(" "),
+    }))
+    .filter(({ label }) => {
+      if (seen.has(label)) return false;
+      seen.add(label);
+      return true;
+    });
+}
+
 async function detectPython() {
-  const candidates = [
-    process.env.PYTHON,
-    "python",
-    "python3",
-    ...(process.platform === "win32" ? ["py"] : []),
-  ].filter((value, index, list) => Boolean(value) && list.indexOf(value) === index);
+  const candidates = buildCandidates();
 
   for (const candidate of candidates) {
-    const output = await probe(candidate);
+    const output = await probe(candidate.command, candidate.args);
     const version = parseVersion(output);
     if (satisfies(version)) {
-      return { executable: candidate, version: version.label };
+      return {
+        executable: candidate.command,
+        args: candidate.args.slice(0, -1),
+        version: version.label,
+      };
     }
   }
 
@@ -75,7 +104,7 @@ async function detectPython() {
     `Python ${MIN_PYTHON_MAJOR}.${MIN_PYTHON_MINOR} or newer was not found on this machine.`
   );
   error.kind = "python-missing";
-  error.candidates = candidates;
+  error.candidates = candidates.map(({ label }) => label);
   throw error;
 }
 

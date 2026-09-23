@@ -214,17 +214,19 @@ export async function ensureBackendDependencies({ python } = {}) {
 
   if (!(await pathExists(venvPython))) {
     cliLogger.info(`Creating Python virtual environment at ${runtimeVenvDir}...`);
-    const result = await runProcess(interpreter.executable, ["-m", "venv", runtimeVenvDir], {
+    const venvArgs = [...(interpreter.args ?? []), "-m", "venv", runtimeVenvDir];
+    const result = await runProcess(interpreter.executable, venvArgs, {
       timeoutMs: 10 * 60 * 1000,
     });
 
     if (result.code !== 0 || !(await pathExists(venvPython))) {
       throw setupFailure("Failed to create the Python virtual environment", {
         command: interpreter.executable,
-        args: ["-m", "venv", runtimeVenvDir],
+        args: venvArgs,
         cwd: process.cwd(),
         result,
-        suggestion: "Make sure Python 3.12+ is installed correctly and available in PATH.",
+        suggestion:
+          "Make sure Python 3.12 or newer (3.13 and 3.14 are supported) is installed correctly and available in PATH.",
       });
     }
   }

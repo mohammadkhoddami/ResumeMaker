@@ -176,9 +176,9 @@ export class EnvironmentChecker {
         name: "Python",
         ok: false,
         kind: "error",
-        message: "Python 3.12+ was not found",
+        message: "Python 3.12 or newer was not found",
         hint:
-          "Resume Builder requires Python 3.12 or newer.\nPlease install Python and make sure it is available in PATH.",
+          "Resume Builder requires Python 3.12 or newer (3.13 and 3.14 are supported).\nPlease install Python and make sure it is available in PATH.",
       });
     }
   }

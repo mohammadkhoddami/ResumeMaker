@@ -12,7 +12,7 @@ npx @mohammadhkhoddami/resume-builder
 
 That single command:
 
-1. Checks Node.js, Python 3.12+, npm, and required files
+1. Checks Node.js, Python 3.12+ (3.13/3.14 supported), npm, and required files
 2. Copies the app to `~/.resume-builder` and installs dependencies on first run
 3. Starts the FastAPI backend on `http://localhost:8000`
 4. Starts the Vite frontend on `http://localhost:5173`
@@ -142,7 +142,7 @@ npm run build
 ### Required
 
 - Node.js 18+
-- Python 3.12+
+- Python 3.12+ (3.13 and 3.14 are supported)
 - npm 9+
 
 ### Optional
